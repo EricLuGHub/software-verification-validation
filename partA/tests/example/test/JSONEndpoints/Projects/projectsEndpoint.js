@@ -1,0 +1,94 @@
+const expect = require("chai").expect;
+const child_process = require("child_process");
+const chai = require("chai");
+const chaiHttp = require("chai-http");
+const deepEqualInAnyOrder = require("deep-equal-in-any-order");
+const testConstants = require("../../testConstants.js");
+
+const host = testConstants.host;
+const projectsEndpoint = testConstants.projectsEndpoint;
+
+chai.use(chaiHttp);
+chai.use(deepEqualInAnyOrder);
+
+describe("/projects endpoint API Calls - JSON", function () {
+  beforeEach(async function () {
+    child_process.spawn("java", ["-jar", "runTodoManagerRestAPI-1.5.5.jar"]);
+
+    let serverReady = false;
+    while (!serverReady) {
+      try {
+        await chai.request(host).get(projectsEndpoint);
+        serverReady = true;
+      } catch (err) {}
+    }
+  });
+
+  afterEach(async function () {
+    try {
+      await chai.request(host).get("/shutdown");
+    } catch (err) {}
+  });
+
+  it("GET /projects - Returns all projects instances - Capability", async function () {
+    const response = await chai.request(host).get(projectsEndpoint);
+    const expected = {
+      projects: [
+        {
+          id: "1",
+          title: "Office Work",
+          completed: "false",
+          active: "false",
+          description: "",
+          tasks: [
+            {
+              id: "1",
+            },
+            {
+              id: "2",
+            },
+          ],
+        },
+      ],
+    };
+    expect(response).to.have.status(200);
+    expect(response.body).to.deep.equalInAnyOrder(expected);
+  });
+
+  it("HEAD /projects - Return header for projects - Capability", async function () {
+    const response = await chai.request(host).head(projectsEndpoint);
+    expect(response).to.have.status(200);
+  });
+
+  it("POST /projects - Create a todo w/out ID - Capability", async function () {
+    const body = {
+      title: "School",
+      description: "Meeting for 429 group",
+    };
+    const response = await chai.request(host).post(projectsEndpoint).send(body);
+    const expected = {
+      id: "2",
+      title: "School",
+      completed: "false",
+      description: "Meeting for 429 group",
+      active: "false",
+    };
+    expect(response).to.have.status(201);
+    expect(response.body).to.deep.equalInAnyOrder(expected);
+  });
+
+  it("POST /projects - Create a project w/out ID with inavlid input type for active status - Error Case", async function () {
+    const body = {
+      completed: false,
+      title: "429 autoproj",
+      description: "Write unit tests for 429",
+      active: "yes",
+    };
+
+    const response = await chai.request(host).post(projectsEndpoint).send(body);
+    expect(response).to.have.status(400);
+    expect(response.body).to.deep.equal({
+      errorMessages: ["Failed Validation: active should be BOOLEAN"],
+    });
+  });
+});
