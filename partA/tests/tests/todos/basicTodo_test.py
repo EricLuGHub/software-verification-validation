@@ -66,6 +66,28 @@ def generate_title(prefix="pytest"):
     return f"{prefix}-{uuid.uuid4().hex[:10]}"
 
 
+def create_category(name=None):
+    if name is None:
+        name = generate_title("category")
+
+    payload = {
+        "title": name
+    }
+
+    r = requests.post(f"{HOST}/categories", json=payload, timeout=3)
+    return r
+
+def create_project(name=None):
+    if name is None:
+        name = generate_title("project")
+
+    payload = {
+        "title": name
+    }
+
+    r = requests.post(f"{HOST}/projects", json=payload, timeout=3)
+    return r
+
 def create_todo(title=None, doneStatus=False, description="", categories=None, tasksof=None):
     if title is None:
         title = generate_title("todo")
@@ -92,7 +114,7 @@ def extract_created_id(resp_json):
 
 
 def require_created_id(create_resp):
-    assert create_resp.status_code in (200, 201)
+    assert create_resp.status_code == 201
     j = create_resp.json()
     created_id = extract_created_id(j)
     assert created_id is not None
@@ -142,7 +164,7 @@ def todos_contain_expected(response_json, expected_todos):
 def test_create_todo(todo_server):
     title = generate_title("create")
     r = create_todo(title=title)
-    assert r.status_code in (200, 201)
+    assert r.status_code == 201
     body = r.json()
     expected = {
         "id": str(int(body.get("id", "0"))),  
@@ -181,11 +203,11 @@ def test_get_todo_by_id_existing():
 
 
 def test_get_todo_by_id_nonexistent():
-    todo_id = 9999
+    todo_id = 0
     r = requests.get(f"{HOST}{TODOS}/{todo_id}", timeout=2)
     expected = {
     "errorMessages": [
-        "Could not find an instance with todos/9999"
+        "Could not find an instance with todos/0"
         ]
     }
 
@@ -204,7 +226,7 @@ def test_get_todo_by_id_invalid(todo_server):
     assert_subset(expected, r.json())
 
 def test_get_todo_by_id_nonexistent_with_id_query():
-    todo_id = 9999
+    todo_id = 0
     r = requests.get(f"{HOST}{TODOS}?id={todo_id}", timeout=2)
     expected = {
     "todos": []
@@ -237,7 +259,7 @@ def test_get_todo_by_id_filter():
     assert_subset(expected, body)
 
 def test_get_todo_filter_by_id_query_nonexistant_param():
-    r = requests.get(f"{HOST}{TODOS}?id=999999", timeout=3)
+    r = requests.get(f"{HOST}{TODOS}?id=0", timeout=3)
     assert r.status_code == 200
     body = r.json()
     expected = {
@@ -408,21 +430,198 @@ def test_delete_todo_by_id_deletes():
     r2 = requests.get(f"{HOST}{TODOS}/{todo_id}", timeout=3)
     assert r2.status_code == 404
 
+def test_delete_todo_by_id_nonexistent():
+    r = requests.delete(f"{HOST}{TODOS}/0", timeout=3)
+    assert r.status_code == 404
+
 def test_get_todo_categories(todo_server):
-    create_resp = create_todo(categories=[{"id": "1"}, {"id": "2"}])
+
+    new_category_name = generate_title("category")
+    create_category_resp = create_category(name=new_category_name)
+    assert create_category_resp.status_code == 201
+
+    category_id = require_created_id(create_category_resp)
+
+    create_resp = create_todo(categories=[{"id": category_id}])
     todo_id = require_created_id(create_resp)
 
     r = requests.get(f"{HOST}{TODOS}/{todo_id}/categories", timeout=3)
-    assert r.status_code == 200
-    
     body = r.json()
+
+    assert r.status_code == 200
 
     expected = {
         "categories": [
-            {"id": "1"},
-            {"id": "2"}
+            {"id": category_id},
         ]
     }
 
     assert_subset(expected, body)
 
+
+# undocumented
+def test_get_todo_categories():
+    new_cat1 = generate_title("catkcat")
+    create_category_resp1 = create_category(name=new_cat1)
+
+    expected1 = {
+        "id": require_created_id(create_category_resp1),
+        "title": new_cat1,
+        "description": ""
+    }
+
+    new_todo = generate_title("todo")
+    create_resp = create_todo(title=new_todo, categories=[{"id": expected1["id"]}])
+    assert create_resp.status_code == 201
+
+    r = requests.get(f"{HOST}{TODOS}/categories", timeout=3)
+    assert r.status_code == 200
+
+    body = r.json()
+    assert "categories" in body
+    categories = body["categories"]
+    assert expected1 in categories
+
+
+def test_head_todo_categories():
+    create_resp = create_todo()
+    todo_id = require_created_id(create_resp)
+
+    r = requests.head(f"{HOST}{TODOS}/{todo_id}/categories", timeout=3)
+    assert r.status_code in (200, 204, 404)
+    if r.status_code in (200, 204):
+        assert_has_common_headers(r)
+
+
+def test_post_todo_categories_creates_relationship():
+    create_resp = create_todo()
+    todo_id = require_created_id(create_resp)
+
+    new_category_name = generate_title("category")
+    create_category_resp = create_category(name=new_category_name)
+    assert create_category_resp.status_code == 201
+
+    category_id = require_created_id(create_category_resp)
+    payload = {"id": category_id}
+
+    r = requests.post(f"{HOST}{TODOS}/{todo_id}/categories", json=payload, timeout=3)
+    assert r.status_code == 201
+
+    r2 = requests.get(f"{HOST}{TODOS}/{todo_id}/categories", timeout=3)
+    assert r2.status_code == 200
+    body = r2.json()
+    assert body["categories"][0]["id"] == category_id
+
+
+def test_delete_todo_category_relationship():
+    create_resp = create_todo()
+    todo_id = require_created_id(create_resp)
+
+    new_category_name = generate_title("category")
+    create_category_resp = create_category(name=new_category_name)
+    assert create_category_resp.status_code == 201
+
+    category_id = require_created_id(create_category_resp)
+    payload = {"id": category_id}
+    _ = requests.post(f"{HOST}{TODOS}/{todo_id}/categories", json=payload, timeout=3)
+
+    r = requests.delete(f"{HOST}{TODOS}/{todo_id}/categories/{category_id}", timeout=3)
+    assert r.status_code == 200
+
+    r2 = requests.get(f"{HOST}{TODOS}/{todo_id}/categories", timeout=3)
+    assert r2.status_code == 200
+    body = r2.json()
+    assert body["categories"] == []
+
+
+def test_get_todo_tasksof_no_link():
+    create_resp = create_todo()
+    todo_id = require_created_id(create_resp)
+
+    r = requests.get(f"{HOST}{TODOS}/{todo_id}/tasksof", timeout=3)
+    assert r.status_code in (200, 404)
+    body = r.json()
+
+    assert r.status_code == 200
+    assert "projects" in body
+    assert isinstance(body["projects"], list)
+    assert body["projects"] == []
+
+def test_get_todo_tasksof():
+
+    new_project_name = generate_title("project")
+    create_project_resp = create_project(name=new_project_name)
+    assert create_project_resp.status_code == 201
+    project_id = require_created_id(create_project_resp)
+
+
+    create_resp = create_todo(tasksof=[{"id": project_id}])
+    todo_id = require_created_id(create_resp)
+
+
+    payload = {"id": project_id}
+    _ = requests.post(f"{HOST}{TODOS}/{todo_id}/tasksof", json=payload, timeout=3)
+
+    r = requests.get(f"{HOST}{TODOS}/{todo_id}/tasksof", timeout=3)
+    assert r.status_code == 200
+    body = r.json()
+
+    expected = {
+        "projects": [
+            {"id": project_id},
+        ]
+    }
+
+    assert_subset(expected, body)
+
+
+def test_head_todo_tasksof():
+    create_resp = create_todo()
+    todo_id = require_created_id(create_resp)
+
+    r = requests.head(f"{HOST}{TODOS}/{todo_id}/tasksof", timeout=3)
+    assert r.status_code in (200, 204, 404)
+    if r.status_code in (200, 204):
+        assert_has_common_headers(r)
+
+
+def test_post_todo_tasksof_creates_relationship():
+    create_resp = create_todo()
+    todo_id = require_created_id(create_resp)
+
+    new_project_name = generate_title("project")
+    create_project_resp = create_project(name=new_project_name)
+    assert create_project_resp.status_code == 201
+
+    project_id = require_created_id(create_project_resp)
+    payload = {"id": project_id}
+
+    r = requests.post(f"{HOST}{TODOS}/{todo_id}/tasksof", json=payload, timeout=3)
+    assert r.status_code == 201
+
+    r2 = requests.get(f"{HOST}{TODOS}/{todo_id}/tasksof", timeout=3)
+    assert r2.status_code == 200
+    
+    body = r2.json()
+    assert body["projects"][0]["id"] == project_id
+
+
+def test_delete_todo_tasksof_relationship():
+    create_resp = create_todo()
+    todo_id = require_created_id(create_resp)
+
+    new_project_name = generate_title("project")
+    create_project_resp = create_project(name=new_project_name)
+    assert create_project_resp.status_code == 201
+    project_id = require_created_id(create_project_resp)
+    payload = {"id": project_id}
+
+    _ = requests.post(f"{HOST}{TODOS}/{todo_id}/tasksof", json=payload, timeout=3)
+
+    r = requests.delete(f"{HOST}{TODOS}/{todo_id}/tasksof/{project_id}", timeout=3)
+    assert r.status_code == 200
+
+    r2 = requests.get(f"{HOST}{TODOS}/{todo_id}/tasksof", timeout=3)
+    assert r2.status_code == 200
+    body = r2.json()
+    assert body["projects"] == []
