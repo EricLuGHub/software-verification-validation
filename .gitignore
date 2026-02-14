@@ -1,0 +1,92 @@
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtualenvs
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# Packaging / builds
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Test / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.cover/.cache/
+.tox/
+.nox/
+*.log
+test-results/
+junit*.xml
+coverage.xml
+
+# Type checking
+.mypy_cache/
+.pyre/
+.pytype/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Node (if any tooling exists)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Java (since you run a jar)
+*.class
+*.jar
+target/
+.gradle/
+build/
+
+# Secrets / env files
+.env
+.env.*
+*.pem
+*.key
+*.crt
+secrets/
+*.secrets.*
+
+# Local data / temp
+tmp/
+temp/
+*.tmp
+*.bak
+
+# Logs
+logs/
+*.log
+
+# Docker
+.docker/
