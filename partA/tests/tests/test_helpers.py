@@ -52,6 +52,8 @@ def todo_server():
         proc = None
 
     yield
+    # TODO: uncomment this
+    # requests.get(f"{HOST}/shutdown", timeout=3)
 
     if proc is not None:
         proc.terminate()
