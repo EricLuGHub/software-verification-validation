@@ -24,7 +24,7 @@ from test_helpers import (
 # =====================================
 
 def test_get_projects_filter_by_id_query(todo_server):
-    """Test GET /projects?id=X returns only that project"""
+    """GET /projects?id=X returns only that project."""
     title = generate_title("project-id-filter")
     create_resp = create_project(name=title)
     project_id = require_created_id(create_resp)
@@ -39,7 +39,7 @@ def test_get_projects_filter_by_id_query(todo_server):
 
 
 def test_get_projects_filter_by_id_nonexistent(todo_server):
-    """Test GET /projects?id=X with nonexistent ID returns empty list"""
+    """GET /projects?id=0 with nonexistent ID returns empty list."""
     r = requests.get(f"{HOST}{PROJECTS}?id=0", timeout=3)
     assert r.status_code == 200
     body = r.json()
@@ -48,7 +48,7 @@ def test_get_projects_filter_by_id_nonexistent(todo_server):
 
 
 def test_get_projects_filter_ignores_invalid_params(todo_server):
-    """Test GET /projects ignores invalid query parameters"""
+    """GET /projects ignores invalid query parameters."""
     title = generate_title("project-invalid-param")
     create_resp = create_project(name=title)
     project_id = require_created_id(create_resp)
@@ -61,7 +61,7 @@ def test_get_projects_filter_ignores_invalid_params(todo_server):
 
 
 def test_get_projects_filter_by_title(todo_server):
-    """Test GET /projects?title=X returns projects matching title"""
+    """GET /projects?title=X returns projects matching title."""
     title = generate_title("project-title-filter")
     create_resp = create_project(name=title)
     project_id = require_created_id(create_resp)
@@ -75,7 +75,7 @@ def test_get_projects_filter_by_title(todo_server):
 
 
 def test_post_project_missing_title(todo_server):
-    """Test POST /projects without title returns 400"""
+    """POST /projects without title returns 400."""
     payload = {
         "description": "test project"
     }
@@ -87,7 +87,7 @@ def test_post_project_missing_title(todo_server):
 
 
 def test_post_project_with_invalid_field(todo_server):
-    """Test POST /projects with invalid field returns error"""
+    """POST /projects with invalid field returns error."""
     payload = {
         "title": generate_title("project"),
         "invalidField": "test"
@@ -101,7 +101,7 @@ def test_post_project_with_invalid_field(todo_server):
 
 
 def test_post_project_with_id_in_payload(todo_server):
-    """Test POST /projects with id in payload returns error"""
+    """POST /projects with id in payload returns error."""
     payload = {
         "id": "999",
         "title": generate_title("project"),
@@ -115,7 +115,7 @@ def test_post_project_with_id_in_payload(todo_server):
 
 
 def test_put_project_by_id_with_missing_title(todo_server):
-    """Test PUT /projects/:id with missing title returns 400"""
+    """PUT /projects/:id with missing title returns 400."""
     create_resp = create_project()
     project_id = require_created_id(create_resp)
 
@@ -130,7 +130,7 @@ def test_put_project_by_id_with_missing_title(todo_server):
 
 
 def test_put_project_by_id_with_invalid_field(todo_server):
-    """Test PUT /projects/:id with invalid field returns 400"""
+    """PUT /projects/:id with invalid field returns 400."""
     create_resp = create_project()
     project_id = require_created_id(create_resp)
 
@@ -143,7 +143,7 @@ def test_put_project_by_id_with_invalid_field(todo_server):
 
 
 def test_put_project_nonexistent_id(todo_server):
-    """Test PUT /projects/0 with nonexistent ID returns 404"""
+    """PUT /projects/0 with nonexistent ID returns 404."""
     payload = {
         "title": generate_title("amend-project"),
         "description": "test"
@@ -157,7 +157,7 @@ def test_put_project_nonexistent_id(todo_server):
 # =====================================
 
 def test_get_project_tasks_specific_relationship(todo_server):
-    """Test GET /projects/:id/tasks/:id - Get specific task relationship"""
+    """GET /projects/:id/tasks/:id gets specific task relationship."""
     create_project_resp = create_project()
     project_id = require_created_id(create_project_resp)
 
@@ -179,7 +179,7 @@ def test_get_project_tasks_specific_relationship(todo_server):
 
 
 def test_post_project_tasks_specific_relationship(todo_server):
-    """Test POST /projects/:id/tasks/:id - Modify specific task relationship"""
+    """POST /projects/:id/tasks/:id modifies specific task relationship."""
     create_project_resp = create_project()
     project_id = require_created_id(create_project_resp)
 
@@ -198,7 +198,7 @@ def test_post_project_tasks_specific_relationship(todo_server):
 
 
 def test_head_project_tasks_specific_relationship(todo_server):
-    """Test HEAD /projects/:id/tasks/:id - Get headers for specific task"""
+    """HEAD /projects/:id/tasks/:id gets headers for specific task."""
     create_project_resp = create_project()
     project_id = require_created_id(create_project_resp)
 
@@ -219,7 +219,7 @@ def test_head_project_tasks_specific_relationship(todo_server):
 
 
 def test_head_project_tasks_specific_nonexistent(todo_server):
-    """Test HEAD /projects/:id/tasks/:id with nonexistent task ID"""
+    """HEAD /projects/:id/tasks/:id with nonexistent task ID."""
     create_project_resp = create_project()
     project_id = require_created_id(create_project_resp)
 
@@ -230,7 +230,7 @@ def test_head_project_tasks_specific_nonexistent(todo_server):
 
 
 def test_delete_project_tasks_with_nonexistent_todo(todo_server):
-    """Test DELETE /projects/:id/tasks/:id with nonexistent todo returns 404"""
+    """DELETE /projects/:id/tasks/:id with nonexistent todo returns 404."""
     create_project_resp = create_project()
     project_id = require_created_id(create_project_resp)
 
@@ -243,7 +243,7 @@ def test_delete_project_tasks_with_nonexistent_todo(todo_server):
 # =====================================
 
 def test_get_projects_multiple_id_filters(todo_server):
-    """Test GET /projects?id=X&id=Y behavior with multiple IDs"""
+    """GET /projects?id=X&id=Y behavior with multiple IDs."""
     title1 = generate_title("project-multi-1")
     title2 = generate_title("project-multi-2")
     
@@ -262,7 +262,7 @@ def test_get_projects_multiple_id_filters(todo_server):
 
 
 def test_post_project_with_special_characters(todo_server):
-    """Test POST /projects with special characters in title"""
+    """POST /projects with special characters in title."""
     title = generate_title("project") + " & special"
     r = create_project(name=title)
     
@@ -273,7 +273,7 @@ def test_post_project_with_special_characters(todo_server):
 
 
 def test_get_project_with_blank_id(todo_server):
-    """Test GET /projects/ (with trailing slash but no ID)"""
+    """GET /projects/ with trailing slash but no ID."""
     r = requests.get(f"{HOST}{PROJECTS}/", timeout=3)
     
     # Document behavior
@@ -285,7 +285,7 @@ def test_get_project_with_blank_id(todo_server):
 # =====================================
 
 def test_get_project_categories_specific_relationship(todo_server):
-    """Test GET /projects/:id/categories/:id - Get specific category relationship"""
+    """GET /projects/:id/categories/:id gets specific category relationship."""
     create_project_resp = create_project()
     project_id = require_created_id(create_project_resp)
 
@@ -303,7 +303,7 @@ def test_get_project_categories_specific_relationship(todo_server):
 
 
 def test_head_project_categories_specific_relationship(todo_server):
-    """Test HEAD /projects/:id/categories/:id"""
+    """HEAD /projects/:id/categories/:id gets headers."""
     create_project_resp = create_project()
     project_id = require_created_id(create_project_resp)
 
@@ -323,7 +323,7 @@ def test_head_project_categories_specific_relationship(todo_server):
 
 
 def test_delete_project_category_with_nonexistent_category(todo_server):
-    """Test DELETE /projects/:id/categories/:id with nonexistent category"""
+    """DELETE /projects/:id/categories/:id with nonexistent category."""
     create_project_resp = create_project()
     project_id = require_created_id(create_project_resp)
 

@@ -19,6 +19,7 @@ from test_helpers import (
 
 
 def test_create_project(todo_server):
+    """POST /projects creates a new project with title."""
     title = generate_title("create-project")
     r = create_project(name=title)
     assert r.status_code == 201
@@ -32,6 +33,7 @@ def test_create_project(todo_server):
 
 
 def test_get_project_by_id_existing(todo_server):
+    """GET /projects/:id returns the specific project."""
     title = generate_title("get-project-by-id")
     create_resp = create_project(name=title)
     project_id = require_created_id(create_resp)
@@ -53,6 +55,7 @@ def test_get_project_by_id_existing(todo_server):
 
 
 def test_get_project_by_id_filter(todo_server):
+    """GET /projects/:id?id=X filters by query parameter."""
     title = generate_title("get-project-by-id-filter")
     create_resp = create_project(name=title)
     project_id = require_created_id(create_resp)
@@ -73,6 +76,7 @@ def test_get_project_by_id_filter(todo_server):
 
 
 def test_get_projects_returns_all(todo_server):
+    """GET /projects returns all created projects."""
     p1_title = generate_title("get-all-project-1")
     p2_title = generate_title("get-all-project-2")
 
@@ -100,12 +104,14 @@ def test_get_projects_returns_all(todo_server):
 
 
 def test_head_projects_returns_headers(todo_server):
+    """HEAD /projects returns headers only."""
     r = requests.head(f"{HOST}{PROJECTS}", timeout=3)
     assert r.status_code in (200, 204)
     assert_has_common_headers(r)
 
 
 def test_get_projects_filter_by_title_query_param(todo_server):
+    """GET /projects?title=X filters by title query parameter."""
     title = generate_title("project-query-param")
     create_resp = create_project(name=title)
     project_id = require_created_id(create_resp)
@@ -127,6 +133,7 @@ def test_get_projects_filter_by_title_query_param(todo_server):
 
 
 def test_head_project_by_id_headers(todo_server):
+    """HEAD /projects/:id returns headers only."""
     create_resp = create_project()
     project_id = require_created_id(create_resp)
 
@@ -136,6 +143,7 @@ def test_head_project_by_id_headers(todo_server):
 
 
 def test_post_project_by_id_amends_title(todo_server):
+    """POST /projects/:id updates project title."""
     create_resp = create_project()
     project_id = require_created_id(create_resp)
 
@@ -152,6 +160,7 @@ def test_post_project_by_id_amends_title(todo_server):
 
 
 def test_post_project_by_id_amends_description(todo_server):
+    """POST /projects/:id updates project description."""
     create_resp = create_project()
     project_id = require_created_id(create_resp)
 
@@ -168,6 +177,7 @@ def test_post_project_by_id_amends_description(todo_server):
 
 
 def test_post_project_by_id_amends_multiple_fields(todo_server):
+    """POST /projects/:id updates multiple project fields."""
     create_resp = create_project()
     project_id = require_created_id(create_resp)
 
@@ -186,6 +196,7 @@ def test_post_project_by_id_amends_multiple_fields(todo_server):
 
 
 def test_put_project_by_id_amends_fields(todo_server):
+    """PUT /projects/:id updates project fields."""
     create_resp = create_project()
     project_id = require_created_id(create_resp)
 
@@ -204,6 +215,7 @@ def test_put_project_by_id_amends_fields(todo_server):
 
 
 def test_delete_project_by_id_deletes(todo_server):
+    """DELETE /projects/:id removes the project."""
     create_resp = create_project()
     project_id = require_created_id(create_resp)
 

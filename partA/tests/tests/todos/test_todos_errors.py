@@ -16,6 +16,7 @@ from test_helpers import (
 
 
 def test_get_todo_by_id_nonexistent(todo_server):
+    """GET /todos/0 returns 404 for nonexistent todo."""
     todo_id = 0
     r = requests.get(f"{HOST}{TODOS}/{todo_id}", timeout=2)
     expected = {
@@ -29,6 +30,7 @@ def test_get_todo_by_id_nonexistent(todo_server):
 
 
 def test_get_todo_by_id_invalid(todo_server):
+    """GET /todos/abc returns 404 for invalid todo ID."""
     todo_id = "abc"
     r = requests.get(f"{HOST}{TODOS}/{todo_id}", timeout=2)
     expected = {
@@ -41,6 +43,7 @@ def test_get_todo_by_id_invalid(todo_server):
 
 
 def test_get_todo_by_id_nonexistent_with_id_query(todo_server):
+    """GET /todos?id=0 returns empty list for nonexistent todo."""
     todo_id = 0
     r = requests.get(f"{HOST}{TODOS}?id={todo_id}", timeout=2)
     expected = {
@@ -52,6 +55,7 @@ def test_get_todo_by_id_nonexistent_with_id_query(todo_server):
 
 
 def test_get_todo_filter_by_id_query_nonexistant_param(todo_server):
+    """GET /todos?id=0 returns empty list with nonexistent ID."""
     r = requests.get(f"{HOST}{TODOS}?id=0", timeout=3)
     assert r.status_code == 200
     body = r.json()
@@ -62,6 +66,7 @@ def test_get_todo_filter_by_id_query_nonexistant_param(todo_server):
 
 
 def test_post_todo_not_valid_field(todo_server):
+    """POST /todos/:id with invalid field returns 400."""
     create_resp = create_todo()
     todo_id = require_created_id(create_resp)
 
@@ -75,5 +80,6 @@ def test_post_todo_not_valid_field(todo_server):
 
 
 def test_delete_todo_by_id_nonexistent(todo_server):
+    """DELETE /todos/0 returns 404 for nonexistent todo."""
     r = requests.delete(f"{HOST}{TODOS}/0", timeout=3)
     assert r.status_code == 404

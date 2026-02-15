@@ -20,6 +20,7 @@ from test_helpers import (
 
 
 def test_get_project_tasks_no_link(todo_server):
+    """GET /projects/:id/tasks returns empty list when no tasks linked."""
     create_resp = create_project()
     project_id = require_created_id(create_resp)
 
@@ -34,6 +35,7 @@ def test_get_project_tasks_no_link(todo_server):
 
 
 def test_get_project_tasks(todo_server):
+    """GET /projects/:id/tasks returns all linked todos."""
     create_project_resp = create_project()
     project_id = require_created_id(create_project_resp)
 
@@ -57,6 +59,7 @@ def test_get_project_tasks(todo_server):
 
 
 def test_head_project_tasks(todo_server):
+    """HEAD /projects/:id/tasks returns headers only."""
     create_resp = create_project()
     project_id = require_created_id(create_resp)
 
@@ -67,6 +70,7 @@ def test_head_project_tasks(todo_server):
 
 
 def test_post_project_tasks_creates_relationship(todo_server):
+    """POST /projects/:id/tasks creates project-todo relationship."""
     create_project_resp = create_project()
     project_id = require_created_id(create_project_resp)
 
@@ -84,6 +88,7 @@ def test_post_project_tasks_creates_relationship(todo_server):
 
 
 def test_delete_project_task_relationship(todo_server):
+    """DELETE /projects/:id/tasks/:id removes the relationship."""
     create_project_resp = create_project()
     project_id = require_created_id(create_project_resp)
 
@@ -103,6 +108,7 @@ def test_delete_project_task_relationship(todo_server):
 
 
 def test_get_project_categories_no_link(todo_server):
+    """GET /projects/:id/categories returns empty list when no categories linked."""
     create_resp = create_project()
     project_id = require_created_id(create_resp)
 
@@ -117,6 +123,7 @@ def test_get_project_categories_no_link(todo_server):
 
 
 def test_get_project_categories(todo_server):
+    """GET /projects/:id/categories returns all linked categories."""
     create_project_resp = create_project()
     project_id = require_created_id(create_project_resp)
 
@@ -140,6 +147,7 @@ def test_get_project_categories(todo_server):
 
 
 def test_head_project_categories(todo_server):
+    """HEAD /projects/:id/categories returns headers only."""
     create_resp = create_project()
     project_id = require_created_id(create_resp)
 
@@ -150,6 +158,7 @@ def test_head_project_categories(todo_server):
 
 
 def test_post_project_categories_creates_relationship(todo_server):
+    """POST /projects/:id/categories creates project-category relationship."""
     create_project_resp = create_project()
     project_id = require_created_id(create_project_resp)
 
@@ -167,6 +176,7 @@ def test_post_project_categories_creates_relationship(todo_server):
 
 
 def test_delete_project_category_relationship(todo_server):
+    """DELETE /projects/:id/categories/:id removes the relationship."""
     create_project_resp = create_project()
     project_id = require_created_id(create_project_resp)
 

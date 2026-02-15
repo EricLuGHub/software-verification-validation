@@ -16,6 +16,7 @@ from test_helpers import (
 
 
 def test_get_project_by_id_nonexistent(todo_server):
+    """GET /projects/0 returns 404 for nonexistent project."""
     project_id = 0
     r = requests.get(f"{HOST}{PROJECTS}/{project_id}", timeout=3)
     expected = {
@@ -28,6 +29,7 @@ def test_get_project_by_id_nonexistent(todo_server):
 
 
 def test_get_project_by_id_invalid(todo_server):
+    """GET /projects/abc returns 404 for invalid project ID."""
     project_id = "abc"
     r = requests.get(f"{HOST}{PROJECTS}/{project_id}", timeout=3)
     expected = {
@@ -40,6 +42,7 @@ def test_get_project_by_id_invalid(todo_server):
 
 
 def test_get_project_by_id_nonexistent_with_id_query(todo_server):
+    """GET /projects?id=0 returns empty list for nonexistent project."""
     project_id = 0
     r = requests.get(f"{HOST}{PROJECTS}?id={project_id}", timeout=3)
     expected = {"projects": []}
@@ -48,5 +51,6 @@ def test_get_project_by_id_nonexistent_with_id_query(todo_server):
 
 
 def test_delete_project_by_id_nonexistent(todo_server):
+    """DELETE /projects/0 returns 404 for nonexistent project."""
     r = requests.delete(f"{HOST}{PROJECTS}/0", timeout=3)
     assert r.status_code == 404

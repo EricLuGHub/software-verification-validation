@@ -22,6 +22,7 @@ from test_helpers import (
 
 
 def test_get_todo_categories(todo_server):
+    """GET /todos/:id/categories returns all linked categories."""
     new_category_name = generate_title("category")
     create_category_resp = create_category(name=new_category_name)
     assert create_category_resp.status_code == 201
@@ -46,6 +47,7 @@ def test_get_todo_categories(todo_server):
 
 
 def test_get_todo_categories_undocumented(todo_server):
+    """GET /todos/categories returns all categories (undocumented endpoint)."""
     new_cat1 = generate_title("catkcat")
     create_category_resp1 = create_category(name=new_cat1)
 
@@ -69,6 +71,7 @@ def test_get_todo_categories_undocumented(todo_server):
 
 
 def test_head_todo_categories(todo_server):
+    """HEAD /todos/:id/categories returns headers only."""
     create_resp = create_todo()
     todo_id = require_created_id(create_resp)
 
@@ -79,6 +82,7 @@ def test_head_todo_categories(todo_server):
 
 
 def test_post_todo_categories_creates_relationship(todo_server):
+    """POST /todos/:id/categories creates todo-category relationship."""
     create_resp = create_todo()
     todo_id = require_created_id(create_resp)
 
@@ -99,6 +103,7 @@ def test_post_todo_categories_creates_relationship(todo_server):
 
 
 def test_delete_todo_category_relationship(todo_server):
+    """DELETE /todos/:id/categories/:id removes the relationship."""
     create_resp = create_todo()
     todo_id = require_created_id(create_resp)
 
@@ -120,6 +125,7 @@ def test_delete_todo_category_relationship(todo_server):
 
 
 def test_get_todo_tasksof_no_link(todo_server):
+    """GET /todos/:id/tasksof returns empty list when no projects linked."""
     create_resp = create_todo()
     todo_id = require_created_id(create_resp)
 
@@ -134,6 +140,7 @@ def test_get_todo_tasksof_no_link(todo_server):
 
 
 def test_get_todo_tasksof(todo_server):
+    """GET /todos/:id/tasksof returns all linked projects."""
     new_project_name = generate_title("project")
     create_project_resp = create_project(name=new_project_name)
     assert create_project_resp.status_code == 201
@@ -159,6 +166,7 @@ def test_get_todo_tasksof(todo_server):
 
 
 def test_head_todo_tasksof(todo_server):
+    """HEAD /todos/:id/tasksof returns headers only."""
     create_resp = create_todo()
     todo_id = require_created_id(create_resp)
 
@@ -169,6 +177,7 @@ def test_head_todo_tasksof(todo_server):
 
 
 def test_post_todo_tasksof_creates_relationship(todo_server):
+    """POST /todos/:id/tasksof creates todo-project relationship."""
     create_resp = create_todo()
     todo_id = require_created_id(create_resp)
 
@@ -190,6 +199,7 @@ def test_post_todo_tasksof_creates_relationship(todo_server):
 
 
 def test_delete_todo_tasksof_relationship(todo_server):
+    """DELETE /todos/:id/tasksof/:id removes the relationship."""
     create_resp = create_todo()
     todo_id = require_created_id(create_resp)
 

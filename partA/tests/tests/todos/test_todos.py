@@ -19,6 +19,7 @@ from test_helpers import (
 
 
 def test_create_todo(todo_server):
+    """POST /todos creates a new todo with title."""
     title = generate_title("create")
     r = create_todo(title=title)
     assert r.status_code == 201
@@ -33,6 +34,7 @@ def test_create_todo(todo_server):
 
 
 def test_get_todo_by_id_existing(todo_server):
+    """GET /todos/:id returns the specific todo."""
     title = generate_title("get-by-id")
     create_resp = create_todo(title=title)
 
@@ -58,6 +60,7 @@ def test_get_todo_by_id_existing(todo_server):
 
 
 def test_get_todo_by_id_filter(todo_server):
+    """GET /todos/:id?id=X filters by query parameter."""
     title = generate_title("get-by-id")
     create_resp = create_todo(title=title)
 
@@ -81,6 +84,7 @@ def test_get_todo_by_id_filter(todo_server):
 
 
 def test_get_todos_returns_all(todo_server):
+    """GET /todos returns all created todos."""
     todo1_title = generate_title("get-all-1")
     todo2_title = generate_title("get-all-2")
 
@@ -111,12 +115,14 @@ def test_get_todos_returns_all(todo_server):
 
 
 def test_head_todos_returns_headers(todo_server):
+    """HEAD /todos returns headers only."""
     r = requests.head(f"{HOST}{TODOS}", timeout=3)
     assert r.status_code in (200, 204)
     assert_has_common_headers(r)
 
 
 def test_get_todos_filter_by_title_query_param(todo_server):
+    """GET /todos?title=X filters by title query parameter."""
     title = generate_title("query-param")
     create_resp = create_todo(title=title)
     todo_id = require_created_id(create_resp)
@@ -138,6 +144,7 @@ def test_get_todos_filter_by_title_query_param(todo_server):
 
 
 def test_get_todo_by_id_existing(todo_server):
+    """GET /todos/:id verifies todo exists."""
     create_resp = create_todo()
     todo_id = require_created_id(create_resp)
 
@@ -147,6 +154,7 @@ def test_get_todo_by_id_existing(todo_server):
 
 
 def test_head_todo_by_id_headers(todo_server):
+    """HEAD /todos/:id returns headers only."""
     create_resp = create_todo()
     todo_id = require_created_id(create_resp)
 
@@ -156,6 +164,7 @@ def test_head_todo_by_id_headers(todo_server):
 
 
 def test_post_todo_by_id_amends_title(todo_server):
+    """POST /todos/:id updates todo title."""
     create_resp = create_todo()
     todo_id = require_created_id(create_resp)
 
@@ -172,6 +181,7 @@ def test_post_todo_by_id_amends_title(todo_server):
 
 
 def test_post_todo_by_id_amends_doneStatus(todo_server):
+    """POST /todos/:id updates todo doneStatus."""
     create_resp = create_todo()
     todo_id = require_created_id(create_resp)
 
@@ -188,6 +198,7 @@ def test_post_todo_by_id_amends_doneStatus(todo_server):
 
 
 def test_post_todo_by_id_amends_description(todo_server):
+    """POST /todos/:id updates todo description."""
     create_resp = create_todo()
     todo_id = require_created_id(create_resp)
 
@@ -204,6 +215,7 @@ def test_post_todo_by_id_amends_description(todo_server):
 
 
 def test_post_todo_by_id_amends_multiple_fields(todo_server):
+    """POST /todos/:id updates multiple todo fields."""
     create_resp = create_todo()
     todo_id = require_created_id(create_resp)
 
@@ -224,6 +236,7 @@ def test_post_todo_by_id_amends_multiple_fields(todo_server):
 
 
 def test_delete_todo_by_id_deletes(todo_server):
+    """DELETE /todos/:id removes the todo."""
     create_resp = create_todo()
     todo_id = require_created_id(create_resp)
 
