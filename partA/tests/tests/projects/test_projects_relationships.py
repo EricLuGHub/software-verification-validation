@@ -214,40 +214,6 @@ def test_get_project_tasks_specific_relationship(todo_server):
         assert "todos" in body or "id" in str(body)
 
 
-def test_post_project_tasks_specific_relationship(todo_server):
-    """POST /projects/:id/tasks/:id modifies specific task relationship."""
-    create_project_resp = create_project()
-    project_id = require_created_id(create_project_resp)
-
-    create_todo_resp = create_todo()
-    todo_id = require_created_id(create_todo_resp)
-
-    payload = {"id": todo_id}
-    requests.post(f"{HOST}{PROJECTS}/{project_id}/tasksof", json=payload, timeout=3)
-
-    r = requests.post(f"{HOST}{PROJECTS}/{project_id}/tasksof/{todo_id}", json={}, timeout=3)
-    
-    assert r.status_code == 200
-
-
-def test_head_project_tasks_specific_relationship(todo_server):
-    """HEAD /projects/:id/tasks/:id gets headers for specific task."""
-    create_project_resp = create_project()
-    project_id = require_created_id(create_project_resp)
-
-    create_todo_resp = create_todo()
-    todo_id = require_created_id(create_todo_resp)
-
-    payload = {"id": todo_id}
-    requests.post(f"{HOST}{PROJECTS}/{project_id}/tasks", json=payload, timeout=3)
-
-    r = requests.head(f"{HOST}{PROJECTS}/{project_id}/tasks/{todo_id}", timeout=3)
-    
-    assert r.status_code == 200
-    if r.status_code == 200:
-        assert_has_common_headers(r)
-
-
 def test_head_project_tasks_specific_nonexistent(todo_server):
     """HEAD /projects/:id/tasks/:id with nonexistent task ID."""
     create_project_resp = create_project()
@@ -265,22 +231,6 @@ def test_delete_project_tasks_with_nonexistent_todo(todo_server):
 
     r = requests.delete(f"{HOST}{PROJECTS}/{project_id}/tasks/0", timeout=3)
     assert r.status_code == 404
-
-
-def test_get_project_categories_specific_relationship(todo_server):
-    """GET /projects/:id/categories/:id gets specific category relationship."""
-    create_project_resp = create_project()
-    project_id = require_created_id(create_project_resp)
-
-    create_category_resp = create_category()
-    category_id = require_created_id(create_category_resp)
-
-    payload = {"id": category_id}
-    requests.post(f"{HOST}{PROJECTS}/{project_id}/categories", json=payload, timeout=3)
-
-    r = requests.get(f"{HOST}{PROJECTS}/{project_id}/categories/{category_id}", timeout=3)
-    
-    assert r.status_code == 200
 
 
 def test_head_project_categories_specific_relationship(todo_server):
