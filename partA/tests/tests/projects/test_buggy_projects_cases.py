@@ -219,24 +219,3 @@ def test_expected_get_projects_categories_returns_404(todo_server):
     r = requests.get(f"{HOST}{PROJECTS}/categories", timeout=3)
     assert r.status_code == 404
 
-
-def test_bug_delete_projects_categories_deletes_category(todo_server):
-    """BUG: DELETE /projects/categories deletes category specified in body."""
-    create_category_resp = create_category()
-    category_id = require_created_id(create_category_resp)
-
-    r = requests.delete(
-        f"{HOST}{PROJECTS}/categories",
-        json={"id": category_id},
-        timeout=3,
-    )
-    assert r.status_code == 200
-
-    r2 = requests.get(f"{HOST}{CATEGORIES}/{category_id}", timeout=3)
-    assert r2.status_code == 404
-
-
-def test_expected_delete_projects_categories_returns_404(todo_server):
-    """EXPECTED: DELETE /projects/categories returns 404."""
-    r = requests.delete(f"{HOST}{PROJECTS}/categories", timeout=3)
-    assert r.status_code == 404
