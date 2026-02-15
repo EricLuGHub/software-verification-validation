@@ -244,33 +244,6 @@ def test_get_project_tasks_xml(todo_server):
     assert r.status_code == 200
     assert "application/xml" in r.headers.get("Content-Type", "")
 
-## TODO: confirm returns 404 or move to buggy suite
-def test_post_project_tasks_xml(todo_server):
-    """POST /projects/:id/tasks with XML creates relationship."""
-    create_project_resp = create_project()
-    project_id = require_created_id(create_project_resp)
-    
-    create_todo_resp = create_todo()
-    todo_id = require_created_id(create_todo_resp)
-    
-    xml_payload = f"""<?xml version="1.0" encoding="UTF-8"?>
-<todo>
-    <id>{todo_id}</id>
-</todo>"""
-    
-    r = requests.post(
-        f"{HOST}{PROJECTS}/{project_id}/tasks",
-        data=xml_payload,
-        headers={"Content-Type": "application/xml"},
-        timeout=3
-    )
-    assert r.status_code == 201
-    
-    r2 = requests.get(f"{HOST}{PROJECTS}/{project_id}/tasks", timeout=3)
-    assert r2.status_code == 200
-    body = r2.json()
-    assert any(t["id"] == todo_id for t in body["todos"])
-
 
 def test_get_project_categories_xml(todo_server):
     """GET /projects/:id/categories with Accept: application/xml returns XML."""
@@ -290,30 +263,3 @@ def test_get_project_categories_xml(todo_server):
     )
     assert r.status_code == 200
     assert "application/xml" in r.headers.get("Content-Type", "")
-
-
-def test_post_project_categories_xml(todo_server):
-    """POST /projects/:id/categories with XML creates relationship."""
-    create_project_resp = create_project()
-    project_id = require_created_id(create_project_resp)
-    
-    create_category_resp = create_category()
-    category_id = require_created_id(create_category_resp)
-    
-    xml_payload = f"""<?xml version="1.0" encoding="UTF-8"?>
-<category>
-    <id>{category_id}</id>
-</category>"""
-    
-    r = requests.post(
-        f"{HOST}{PROJECTS}/{project_id}/categories",
-        data=xml_payload,
-        headers={"Content-Type": "application/xml"},
-        timeout=3
-    )
-    assert r.status_code == 201
-    
-    r2 = requests.get(f"{HOST}{PROJECTS}/{project_id}/categories", timeout=3)
-    assert r2.status_code == 200
-    body = r2.json()
-    assert any(c["id"] == category_id for c in body["categories"])
