@@ -278,12 +278,10 @@ def test_get_projects_multiple_id_filters(todo_server):
     project_id1 = require_created_id(create_resp1)
     project_id2 = require_created_id(create_resp2)
 
-    # Query with multiple IDs
     r = requests.get(f"{HOST}{PROJECTS}?id={project_id1}&id={project_id2}", timeout=3)
     assert r.status_code == 200
     body = r.json()
     
-    # Document behavior - may only return first or both
     assert "projects" in body
 
 
@@ -294,13 +292,11 @@ def test_post_project_with_special_characters(todo_server):
     
     assert r.status_code == 201
     body = r.json()
-    # Special characters should be preserved
     assert "&" in body["title"]
 
 
-# =====================================
+
 # XML Format Tests
-# =====================================
 
 def test_create_project_xml(todo_server):
     """POST /projects with XML content type creates a new project."""
