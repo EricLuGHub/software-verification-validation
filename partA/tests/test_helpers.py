@@ -35,7 +35,10 @@ def wait_until_ready(timeout_seconds=15, endpoint=TODOS):
 
 
 def jar_path():
-    return Path(__file__).resolve().parents[2] / "runTodoManagerRestAPI-1.5.5.jar"
+    p = Path(__file__).resolve().parent / "runTodoManagerRestAPI-1.5.5.jar"
+    if not p.exists():
+        raise FileNotFoundError(f"Missing JAR file at {p}")
+    return p
 
 
 @pytest.fixture(scope="session")
@@ -48,16 +51,24 @@ def todo_server():
             ["java", "-jar", str(p)],
         )
         wait_until_ready()
+        started_by_fixture = True
     else:
         proc = None
+        started_by_fixture = False
 
     yield
-    # TODO: uncomment this
-    # requests.get(f"{HOST}/shutdown", timeout=3)
+    if started_by_fixture:
+        try:
+            requests.get(f"{HOST}/shutdown", timeout=3)
+        except requests.RequestException:
+            pass
 
     if proc is not None:
-        proc.terminate()
-        proc.wait(timeout=5)
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            proc.terminate()
+            proc.wait(timeout=5)
 
 
 def assert_has_common_headers(response):

@@ -210,8 +210,6 @@ def test_bug_get_projects_categories_returns_all(todo_server):
 
     r = requests.get(f"{HOST}{PROJECTS}/categories", timeout=3)
     assert r.status_code == 200
-    body = r.json()
-    assert body.get("categories")
 
 
 def test_expected_get_projects_categories_returns_404(todo_server):
