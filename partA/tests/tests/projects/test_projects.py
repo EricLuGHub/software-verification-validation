@@ -224,3 +224,75 @@ def test_delete_project_by_id_deletes(todo_server):
 
     r2 = requests.get(f"{HOST}{PROJECTS}/{project_id}", timeout=3)
     assert r2.status_code == 404
+
+
+def test_get_projects_filter_by_id_query(todo_server):
+    """GET /projects?id=X returns only that project."""
+    title = generate_title("project-id-filter")
+    create_resp = create_project(name=title)
+    project_id = require_created_id(create_resp)
+
+    r = requests.get(f"{HOST}{PROJECTS}?id={project_id}", timeout=3)
+    assert r.status_code == 200
+    body = r.json()
+    
+    assert "projects" in body
+    assert len(body["projects"]) == 1
+    assert body["projects"][0]["id"] == project_id
+
+
+def test_get_projects_filter_ignores_invalid_params(todo_server):
+    """GET /projects ignores invalid query parameters."""
+    title = generate_title("project-invalid-param")
+    create_resp = create_project(name=title)
+    project_id = require_created_id(create_resp)
+
+    r = requests.get(f"{HOST}{PROJECTS}?asdfajksdlf=test&id={project_id}", timeout=3)
+    assert r.status_code == 200
+    body = r.json()
+    
+    assert any(p["id"] == project_id for p in body["projects"])
+
+
+def test_get_projects_filter_by_title(todo_server):
+    """GET /projects?title=X returns projects matching title."""
+    title = generate_title("project-title-filter")
+    create_resp = create_project(name=title)
+    project_id = require_created_id(create_resp)
+
+    # Test exact title match
+    r = requests.get(f"{HOST}{PROJECTS}?title={requests.utils.quote(title)}", timeout=3)
+    assert r.status_code == 200
+    body = r.json()
+    
+    assert any(p["title"] == title for p in body["projects"])
+
+
+def test_get_projects_multiple_id_filters(todo_server):
+    """GET /projects?id=X&id=Y behavior with multiple IDs."""
+    title1 = generate_title("project-multi-1")
+    title2 = generate_title("project-multi-2")
+    
+    create_resp1 = create_project(name=title1)
+    create_resp2 = create_project(name=title2)
+    project_id1 = require_created_id(create_resp1)
+    project_id2 = require_created_id(create_resp2)
+
+    # Query with multiple IDs
+    r = requests.get(f"{HOST}{PROJECTS}?id={project_id1}&id={project_id2}", timeout=3)
+    assert r.status_code == 200
+    body = r.json()
+    
+    # Document behavior - may only return first or both
+    assert "projects" in body
+
+
+def test_post_project_with_special_characters(todo_server):
+    """POST /projects with special characters in title."""
+    title = generate_title("project") + " & special"
+    r = create_project(name=title)
+    
+    assert r.status_code == 201
+    body = r.json()
+    # Special characters should be preserved
+    assert "&" in body["title"]
