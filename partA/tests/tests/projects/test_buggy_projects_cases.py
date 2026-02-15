@@ -17,10 +17,7 @@ from test_helpers import (
     require_created_id,
 )
 
-
-# =====================================
 # Bug: Relation GET returns unrelated entity on invalid id
-# =====================================
 
 def test_bug_invalid_project_relation_get_returns_any_entity(todo_server):
     """BUG: GET /projects/:id/tasks returns unrelated todo for invalid id."""
@@ -44,10 +41,7 @@ def test_expected_invalid_project_relation_get_returns_404(todo_server):
     r = requests.get(f"{HOST}{PROJECTS}/0/tasks", timeout=3)
     assert r.status_code == 404
 
-
-# =====================================
 # Bug: Relation POST with XML fails
-# =====================================
 
 def test_bug_post_project_tasks_xml_returns_404(todo_server):
     """BUG: POST /projects/:id/tasks with XML returns 404."""
@@ -92,10 +86,7 @@ def test_expected_post_project_tasks_xml_creates_relation(todo_server):
     )
     assert r.status_code == 201
 
-
-# =====================================
 # Bug: POST /projects skips id after invalid field
-# =====================================
 
 def test_bug_post_project_skips_id_after_invalid_field(todo_server):
     """BUG: POST /projects skips id after invalid payload."""
@@ -122,10 +113,7 @@ def test_expected_post_project_does_not_skip_id_after_invalid_field(todo_server)
     second_id = int(require_created_id(second_resp))
     assert second_id == first_id + 1
 
-
-# =====================================
 # Bug: Secondary relation endpoints return 404 instead of 405
-# =====================================
 
 def test_bug_get_secondary_project_relation_returns_404(todo_server):
     """BUG: GET /projects/:id/tasks/:id returns 404 with empty body."""
@@ -164,10 +152,7 @@ def test_expected_post_secondary_project_relation_returns_405(todo_server):
     r = requests.post(f"{HOST}{PROJECTS}/{project_id}/tasks/0", json={}, timeout=3)
     assert r.status_code == 405
 
-
-# =====================================
 # Bug: URL parameter filters ignored on /projects/:id
-# =====================================
 
 def test_bug_get_project_by_id_ignores_query_filter(todo_server):
     """BUG: GET /projects/:id ignores query filters and returns project."""
@@ -190,10 +175,7 @@ def test_expected_get_project_by_id_respects_query_filter(todo_server):
     body = r.json()
     assert body.get("projects") == []
 
-
-# =====================================
 # Bug: POST /projects/:id/tasks creates todo without id
-# =====================================
 
 def test_bug_post_project_tasks_without_id_creates_todo(todo_server):
     """BUG: POST /projects/:id/tasks creates a new todo when id missing."""
@@ -219,10 +201,7 @@ def test_expected_post_project_tasks_without_id_returns_400(todo_server):
     r = requests.post(f"{HOST}{PROJECTS}/{project_id}/tasks", json=payload, timeout=3)
     assert r.status_code == 400
 
-
-# =====================================
 # Bug: Undocumented relation collection endpoints
-# =====================================
 
 def test_bug_get_projects_categories_returns_all(todo_server):
     """BUG: GET /projects/categories returns all categories."""

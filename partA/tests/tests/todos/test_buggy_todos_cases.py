@@ -2,7 +2,6 @@ import requests
 from pathlib import Path
 import sys
 
-# Add parent directory to path to import test_helpers
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from test_helpers import (
@@ -16,10 +15,7 @@ from test_helpers import (
     require_created_id,
 )
 
-
-# =====================================
 # Bug: Relation GET returns unrelated entity on invalid id
-# =====================================
 
 def test_bug_invalid_todo_relation_get_returns_any_entity(todo_server):
     """BUG: GET /todos/:id/categories returns unrelated category for invalid id."""
@@ -40,10 +36,7 @@ def test_expected_invalid_todo_relation_get_returns_404(todo_server):
     r = requests.get(f"{HOST}{TODOS}/0/categories", timeout=3)
     assert r.status_code == 404
 
-
-# =====================================
 # Bug: Relation POST with XML fails
-# =====================================
 
 def test_bug_post_todo_categories_xml_returns_404(todo_server):
     """BUG: POST /todos/:id/categories with XML returns 404."""
@@ -88,10 +81,7 @@ def test_expected_post_todo_categories_xml_creates_relation(todo_server):
     )
     assert r.status_code == 201
 
-
-# =====================================
 # Bug: POST /todos skips id after invalid field
-# =====================================
 
 def test_bug_post_todo_skips_id_after_invalid_field(todo_server):
     """BUG: POST /todos skips id after invalid payload."""
@@ -118,10 +108,7 @@ def test_expected_post_todo_does_not_skip_id_after_invalid_field(todo_server):
     second_id = int(require_created_id(second_resp))
     assert second_id == first_id + 1
 
-
-# =====================================
 # Bug: Secondary relation endpoints return 404 instead of 405
-# =====================================
 
 def test_bug_get_secondary_todo_relation_returns_404(todo_server):
     """BUG: GET /todos/:id/tasksof/:id returns 404 with empty body."""
@@ -160,10 +147,7 @@ def test_expected_post_secondary_todo_relation_returns_405(todo_server):
     r = requests.post(f"{HOST}{TODOS}/{todo_id}/tasksof/0", json={}, timeout=3)
     assert r.status_code == 405
 
-
-# =====================================
 # Bug: URL parameter filters ignored on /todos/:id
-# =====================================
 
 def test_bug_get_todo_by_id_ignores_query_filter(todo_server):
     """BUG: GET /todos/:id ignores query filters and returns todo."""
@@ -186,10 +170,7 @@ def test_expected_get_todo_by_id_respects_query_filter(todo_server):
     body = r.json()
     assert body.get("todos") == []
 
-
-# =====================================
 # Bug: /todos/tasks unsupported endpoints return 400
-# =====================================
 
 def test_bug_get_todos_tasks_returns_400(todo_server):
     """BUG: GET /todos/tasks returns 400 with index error message."""
@@ -216,10 +197,7 @@ def test_expected_delete_todos_tasks_returns_404(todo_server):
     r = requests.delete(f"{HOST}{TODOS}/tasks", timeout=3)
     assert r.status_code == 404
 
-
-# =====================================
 # Bug: Undocumented relation collection endpoints
-# =====================================
 
 def test_bug_get_todos_categories_returns_all(todo_server):
     """BUG: GET /todos/categories returns all categories."""
