@@ -268,7 +268,6 @@ def test_post_project_tasks_xml(todo_server):
     )
     assert r.status_code == 201
     
-    # Verify relationship
     r2 = requests.get(f"{HOST}{PROJECTS}/{project_id}/tasks", timeout=3)
     assert r2.status_code == 200
     body = r2.json()
@@ -316,7 +315,6 @@ def test_post_project_categories_xml(todo_server):
     )
     assert r.status_code == 201
     
-    # Verify relationship
     r2 = requests.get(f"{HOST}{PROJECTS}/{project_id}/categories", timeout=3)
     assert r2.status_code == 200
     body = r2.json()
