@@ -120,4 +120,4 @@ def test_get_project_with_blank_id(todo_server):
     """GET /projects/ with trailing slash but no ID."""
     r = requests.get(f"{HOST}{PROJECTS}/", timeout=3)
 
-    assert r.status_code in (200, 404)
+    assert r.status_code == 404

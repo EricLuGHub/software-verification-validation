@@ -105,7 +105,7 @@ def test_get_projects_returns_all(todo_server):
 def test_head_projects_returns_headers(todo_server):
     """HEAD /projects returns headers only."""
     r = requests.head(f"{HOST}{PROJECTS}", timeout=3)
-    assert r.status_code in (200, 204)
+    assert r.status_code  == 200
     assert_has_common_headers(r)
 
 

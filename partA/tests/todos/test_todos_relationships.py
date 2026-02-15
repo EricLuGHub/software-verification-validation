@@ -170,8 +170,8 @@ def test_head_todo_tasksof(todo_server):
     todo_id = require_created_id(create_resp)
 
     r = requests.head(f"{HOST}{TODOS}/{todo_id}/tasksof", timeout=3)
-    assert r.status_code in (200, 204, 404)
-    if r.status_code in (200, 204):
+    assert r.status_code == 200
+    if r.status_code == 200:
         assert_has_common_headers(r)
 
 
