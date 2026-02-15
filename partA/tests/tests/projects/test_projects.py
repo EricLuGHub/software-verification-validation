@@ -296,3 +296,101 @@ def test_post_project_with_special_characters(todo_server):
     body = r.json()
     # Special characters should be preserved
     assert "&" in body["title"]
+
+
+# =====================================
+# XML Format Tests
+# =====================================
+
+def test_create_project_xml(todo_server):
+    """POST /projects with XML content type creates a new project."""
+    title = generate_title("create-project-xml")
+    xml_payload = f"""<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <title>{title}</title>
+    <description></description>
+</project>"""
+    
+    r = requests.post(
+        f"{HOST}{PROJECTS}",
+        data=xml_payload,
+        headers={"Content-Type": "application/xml"},
+        timeout=3
+    )
+    assert r.status_code == 201
+
+
+def test_get_project_xml_accept(todo_server):
+    """GET /projects with Accept: application/xml returns XML response."""
+    create_resp = create_project()
+    project_id = require_created_id(create_resp)
+    
+    r = requests.get(
+        f"{HOST}{PROJECTS}/{project_id}",
+        headers={"Accept": "application/xml"},
+        timeout=3
+    )
+    assert r.status_code == 200
+    assert "application/xml" in r.headers.get("Content-Type", "")
+
+
+def test_get_all_projects_xml(todo_server):
+    """GET /projects with Accept: application/xml returns all projects in XML."""
+    title = generate_title("get-all-xml")
+    create_project(name=title)
+    
+    r = requests.get(
+        f"{HOST}{PROJECTS}",
+        headers={"Accept": "application/xml"},
+        timeout=3
+    )
+    assert r.status_code == 200
+    assert "application/xml" in r.headers.get("Content-Type", "")
+
+
+def test_post_project_xml_update(todo_server):
+    """POST /projects/:id with XML updates project."""
+    create_resp = create_project()
+    project_id = require_created_id(create_resp)
+    
+    new_title = generate_title("updated-xml")
+    xml_payload = f"""<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <title>{new_title}</title>
+</project>"""
+    
+    r = requests.post(
+        f"{HOST}{PROJECTS}/{project_id}",
+        data=xml_payload,
+        headers={"Content-Type": "application/xml"},
+        timeout=3
+    )
+    assert r.status_code == 200
+    
+    # Verify update
+    r2 = requests.get(f"{HOST}{PROJECTS}/{project_id}", timeout=3)
+    assert r2.status_code == 200
+    body = r2.json()
+    assert body["projects"][0]["title"] == new_title
+
+
+def test_put_project_xml(todo_server):
+    """PUT /projects/:id with XML updates project fields."""
+    create_resp = create_project()
+    project_id = require_created_id(create_resp)
+    
+    new_title = generate_title("put-xml")
+    new_desc = "XML description"
+    xml_payload = f"""<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <title>{new_title}</title>
+    <description>{new_desc}</description>
+</project>"""
+    
+    r = requests.put(
+        f"{HOST}{PROJECTS}/{project_id}",
+        data=xml_payload,
+        headers={"Content-Type": "application/xml"},
+        timeout=3
+    )
+    assert r.status_code == 200

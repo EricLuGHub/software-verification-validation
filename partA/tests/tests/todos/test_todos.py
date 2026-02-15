@@ -245,3 +245,80 @@ def test_delete_todo_by_id_deletes(todo_server):
 
     r2 = requests.get(f"{HOST}{TODOS}/{todo_id}", timeout=3)
     assert r2.status_code == 404
+
+
+# =====================================
+# XML Format Tests
+# =====================================
+
+def test_create_todo_xml(todo_server):
+    """POST /todos with XML content type creates a new todo."""
+    title = generate_title("create-todo-xml")
+    xml_payload = f"""<?xml version="1.0" encoding="UTF-8"?>
+<todo>
+    <title>{title}</title>
+    <doneStatus>false</doneStatus>
+    <description></description>
+</todo>"""
+    
+    r = requests.post(
+        f"{HOST}{TODOS}",
+        data=xml_payload,
+        headers={"Content-Type": "application/xml"},
+        timeout=3
+    )
+    assert r.status_code == 201
+
+
+def test_get_todo_xml_accept(todo_server):
+    """GET /todos/:id with Accept: application/xml returns XML response."""
+    create_resp = create_todo()
+    todo_id = require_created_id(create_resp)
+    
+    r = requests.get(
+        f"{HOST}{TODOS}/{todo_id}",
+        headers={"Accept": "application/xml"},
+        timeout=3
+    )
+    assert r.status_code == 200
+    assert "application/xml" in r.headers.get("Content-Type", "")
+
+
+def test_get_all_todos_xml(todo_server):
+    """GET /todos with Accept: application/xml returns all todos in XML."""
+    title = generate_title("get-all-xml")
+    create_todo(title=title)
+    
+    r = requests.get(
+        f"{HOST}{TODOS}",
+        headers={"Accept": "application/xml"},
+        timeout=3
+    )
+    assert r.status_code == 200
+    assert "application/xml" in r.headers.get("Content-Type", "")
+
+
+def test_post_todo_xml_update(todo_server):
+    """POST /todos/:id with XML updates todo."""
+    create_resp = create_todo()
+    todo_id = require_created_id(create_resp)
+    
+    new_title = generate_title("updated-xml")
+    xml_payload = f"""<?xml version="1.0" encoding="UTF-8"?>
+<todo>
+    <title>{new_title}</title>
+</todo>"""
+    
+    r = requests.post(
+        f"{HOST}{TODOS}/{todo_id}",
+        data=xml_payload,
+        headers={"Content-Type": "application/xml"},
+        timeout=3
+    )
+    assert r.status_code == 200
+    
+    # Verify update
+    r2 = requests.get(f"{HOST}{TODOS}/{todo_id}", timeout=3)
+    assert r2.status_code == 200
+    body = r2.json()
+    assert body["todos"][0]["title"] == new_title

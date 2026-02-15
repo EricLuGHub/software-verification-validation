@@ -218,3 +218,107 @@ def test_delete_todo_tasksof_relationship(todo_server):
     assert r2.status_code == 200
     body = r2.json()
     assert body["projects"] == []
+
+
+# =====================================
+# XML Format Tests
+# =====================================
+
+def test_get_todo_categories_xml(todo_server):
+    """GET /todos/:id/categories with Accept: application/xml returns XML."""
+    create_resp = create_todo()
+    todo_id = require_created_id(create_resp)
+    
+    new_category_name = generate_title("category")
+    create_category_resp = create_category(name=new_category_name)
+    category_id = require_created_id(create_category_resp)
+    
+    payload = {"id": category_id}
+    requests.post(f"{HOST}{TODOS}/{todo_id}/categories", json=payload, timeout=3)
+    
+    r = requests.get(
+        f"{HOST}{TODOS}/{todo_id}/categories",
+        headers={"Accept": "application/xml"},
+        timeout=3
+    )
+    assert r.status_code == 200
+    assert "application/xml" in r.headers.get("Content-Type", "")
+
+
+def test_post_todo_categories_xml(todo_server):
+    """POST /todos/:id/categories with XML creates relationship."""
+    create_resp = create_todo()
+    todo_id = require_created_id(create_resp)
+    
+    new_category_name = generate_title("category")
+    create_category_resp = create_category(name=new_category_name)
+    category_id = require_created_id(create_category_resp)
+    
+    xml_payload = f"""<?xml version="1.0" encoding="UTF-8"?>
+<category>
+    <id>{category_id}</id>
+</category>"""
+    
+    r = requests.post(
+        f"{HOST}{TODOS}/{todo_id}/categories",
+        data=xml_payload,
+        headers={"Content-Type": "application/xml"},
+        timeout=3
+    )
+    assert r.status_code == 201
+    
+    # Verify relationship
+    r2 = requests.get(f"{HOST}{TODOS}/{todo_id}/categories", timeout=3)
+    assert r2.status_code == 200
+    body = r2.json()
+    assert any(c["id"] == category_id for c in body["categories"])
+
+
+def test_get_todo_tasksof_xml(todo_server):
+    """GET /todos/:id/tasksof with Accept: application/xml returns XML."""
+    create_resp = create_todo()
+    todo_id = require_created_id(create_resp)
+    
+    new_project_name = generate_title("project")
+    create_project_resp = create_project(name=new_project_name)
+    project_id = require_created_id(create_project_resp)
+    
+    payload = {"id": project_id}
+    requests.post(f"{HOST}{TODOS}/{todo_id}/tasksof", json=payload, timeout=3)
+    
+    r = requests.get(
+        f"{HOST}{TODOS}/{todo_id}/tasksof",
+        headers={"Accept": "application/xml"},
+        timeout=3
+    )
+    assert r.status_code == 200
+    assert "application/xml" in r.headers.get("Content-Type", "")
+
+
+def test_post_todo_tasksof_xml(todo_server):
+    """POST /todos/:id/tasksof with XML creates relationship."""
+    create_resp = create_todo()
+    todo_id = require_created_id(create_resp)
+    
+    new_project_name = generate_title("project")
+    create_project_resp = create_project(name=new_project_name)
+    project_id = require_created_id(create_project_resp)
+    
+    xml_payload = f"""<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <id>{project_id}</id>
+</project>"""
+    
+    r = requests.post(
+        f"{HOST}{TODOS}/{todo_id}/tasksof",
+        data=xml_payload,
+        headers={"Content-Type": "application/xml"},
+        timeout=3
+    )
+    assert r.status_code == 201
+    
+    # Verify relationship
+    r2 = requests.get(f"{HOST}{TODOS}/{todo_id}/tasksof", timeout=3)
+    assert r2.status_code == 200
+    body = r2.json()
+    assert any(p["id"] == project_id for p in body["projects"])
