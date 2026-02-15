@@ -2,7 +2,6 @@ import requests
 from pathlib import Path
 import sys
 
-# Add parent directory to path to import test_helpers
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from test_helpers import (
@@ -220,9 +219,7 @@ def test_delete_todo_tasksof_relationship(todo_server):
     assert body["projects"] == []
 
 
-# =====================================
 # XML Format Tests
-# =====================================
 
 def test_get_todo_categories_xml(todo_server):
     """GET /todos/:id/categories with Accept: application/xml returns XML."""
@@ -267,7 +264,6 @@ def test_post_todo_categories_xml(todo_server):
     )
     assert r.status_code == 201
     
-    # Verify relationship
     r2 = requests.get(f"{HOST}{TODOS}/{todo_id}/categories", timeout=3)
     assert r2.status_code == 200
     body = r2.json()
@@ -317,7 +313,6 @@ def test_post_todo_tasksof_xml(todo_server):
     )
     assert r.status_code == 201
     
-    # Verify relationship
     r2 = requests.get(f"{HOST}{TODOS}/{todo_id}/tasksof", timeout=3)
     assert r2.status_code == 200
     body = r2.json()

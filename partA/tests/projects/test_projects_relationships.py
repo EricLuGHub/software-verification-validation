@@ -223,9 +223,7 @@ def test_delete_project_category_with_nonexistent_category(todo_server):
     assert r.status_code == 404
 
 
-# =====================================
 # XML Format Tests
-# =====================================
 
 def test_get_project_tasks_xml(todo_server):
     """GET /projects/:id/tasks with Accept: application/xml returns XML."""

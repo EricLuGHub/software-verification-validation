@@ -2,7 +2,6 @@ import requests
 from pathlib import Path
 import sys
 
-# Add parent directory to path to import test_helpers
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from test_helpers import (

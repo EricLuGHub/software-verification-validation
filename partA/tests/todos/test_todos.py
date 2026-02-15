@@ -2,7 +2,6 @@ import requests
 from pathlib import Path
 import sys
 
-# Add parent directory to path to import test_helpers
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from test_helpers import (
@@ -247,9 +246,7 @@ def test_delete_todo_by_id_deletes(todo_server):
     assert r2.status_code == 404
 
 
-# =====================================
 # XML Format Tests
-# =====================================
 
 def test_create_todo_xml(todo_server):
     """POST /todos with XML content type creates a new todo."""
@@ -317,7 +314,6 @@ def test_post_todo_xml_update(todo_server):
     )
     assert r.status_code == 200
     
-    # Verify update
     r2 = requests.get(f"{HOST}{TODOS}/{todo_id}", timeout=3)
     assert r2.status_code == 200
     body = r2.json()

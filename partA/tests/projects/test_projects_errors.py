@@ -2,7 +2,6 @@ import requests
 from pathlib import Path
 import sys
 
-# Add parent directory to path to import test_helpers
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from test_helpers import (
@@ -120,6 +119,5 @@ def test_put_project_nonexistent_id(todo_server):
 def test_get_project_with_blank_id(todo_server):
     """GET /projects/ with trailing slash but no ID."""
     r = requests.get(f"{HOST}{PROJECTS}/", timeout=3)
-    
-    # Document behavior
+
     assert r.status_code in (200, 404)
