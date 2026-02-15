@@ -2,6 +2,9 @@
 set -euo pipefail
 
 BASE_URL="http://localhost:4567"
+TODO1_ID="1"
+TODO2_ID="2"
+NEW_CAT_ID="1"
 
 curl -sS "$BASE_URL/projects"
 curl -sS -I "$BASE_URL/projects"
@@ -88,39 +91,6 @@ curl -sS -X DELETE "$BASE_URL/projects/1/tasks"
 
 curl -sS -i -X OPTIONS "$BASE_URL/projects/1/tasks"
 
-TODO1_ID=$(curl -sS -X POST "$BASE_URL/todos" \
-  -H "Content-Type: application/json" \
-  -d '{"title":"proj3-task-1"}' | python3 - <<'PY'
-import sys, json, re
-raw = sys.stdin.read().strip()
-try:
-    print(json.loads(raw)["id"])
-except Exception:
-    m = re.search(r'"id"\s*:\s*"?(\d+)"?', raw)
-    print(m.group(1) if m else "")
-PY
-)
-
-TODO2_ID=$(curl -sS -X POST "$BASE_URL/todos" \
-  -H "Content-Type: application/json" \
-  -d '{"title":"proj3-task-2"}' | python3 - <<'PY'
-import sys, json, re
-raw = sys.stdin.read().strip()
-try:
-    print(json.loads(raw)["id"])
-except Exception:
-    m = re.search(r'"id"\s*:\s*"?(\d+)"?', raw)
-    print(m.group(1) if m else "")
-PY
-)
-
-if [[ -z "$TODO1_ID" ]]; then
-  TODO1_ID="1"
-fi
-if [[ -z "$TODO2_ID" ]]; then
-  TODO2_ID="2"
-fi
-
 curl -sS -X POST "$BASE_URL/projects/1/tasks" \
   -H "Content-Type: application/json" \
   -d '{"title":"just-title"}'
@@ -171,23 +141,6 @@ curl -sS -i -X OPTIONS "$BASE_URL/projects/1/categories"
 
 curl -sS "$BASE_URL/projects/1/categories"
 curl -sS "$BASE_URL/projects/999/categories"
-
-NEW_CAT_ID=$(curl -sS -X POST "$BASE_URL/categories" \
-  -H "Content-Type: application/json" \
-  -d '{"title":"proj3-cat"}' | python3 - <<'PY'
-import sys, json, re
-raw = sys.stdin.read().strip()
-try:
-    print(json.loads(raw)["id"])
-except Exception:
-    m = re.search(r'"id"\s*:\s*"?(\d+)"?', raw)
-    print(m.group(1) if m else "")
-PY
-)
-
-if [[ -z "$NEW_CAT_ID" ]]; then
-  NEW_CAT_ID="1"
-fi
 
 curl -sS -X POST "$BASE_URL/projects/1/categories" \
   -H "Content-Type: application/json" \

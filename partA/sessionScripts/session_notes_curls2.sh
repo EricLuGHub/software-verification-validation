@@ -2,6 +2,8 @@
 set -euo pipefail
 
 BASE_URL="http://localhost:4567"
+NEW_PROJECT_ID="1"
+NEW_CATEGORY_ID="2"
 
 curl -sS "$BASE_URL/todos/1/tasksof"
 curl -sS "$BASE_URL/todos/2/tasksof"
@@ -27,10 +29,6 @@ curl -sS -X POST "$BASE_URL/todos/1/tasksof" \
 curl -sS -X POST "$BASE_URL/todos/3/tasksof" \
   -H "Content-Type: application/json" \
   -d '{"id":1}'
-
-if [[ -z "$NEW_PROJECT_ID" ]]; then
-  NEW_PROJECT_ID="1"
-fi
 
 curl -sS -X POST "$BASE_URL/todos/2/tasksof" \
   -H "Content-Type: application/json" \
