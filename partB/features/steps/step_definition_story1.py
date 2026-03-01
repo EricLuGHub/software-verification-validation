@@ -72,7 +72,7 @@ def step_rename_category(context, old_name, new_name):
 
 @when('I create a category with an empty name')
 def step_create_category_empty_name(context):
-    payload = {"title": ""}
+    payload = {}
     context.last_response = context.http.post(
         f"{context.base_url}/categories", json=payload, timeout=5
     )

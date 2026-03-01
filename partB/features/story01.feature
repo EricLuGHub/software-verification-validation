@@ -16,3 +16,7 @@ Feature:
         When I rename "COMP 310" to "COMP 310 - OS"
         Then the category "COMP 310 - OS" should be created successfully
     
+    Scenario: Create a category with empty name
+        Given the API service is running 
+        When I create a category with an empty name
+        Then the API should return an error indicating that the category name cannot be empty
