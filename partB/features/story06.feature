@@ -11,14 +11,14 @@ Feature: Creating projects
 	# Normal flow
 
 	Scenario Outline: User can create a project with a title
-    When some project is created with title <title>
+    When I create some project with title <title>
     Then some project <id> should be returned
     And project <id> should exist with title <title>
 
   Scenario Outline: User can link a todo to a project
     Given some project <project_id> exists
     And some todo <todo_id> exists
-    When todo <todo_id> is made a task of project <project_id>
+    When I make todo <todo_id> a task of project <project_id>
     Then the request should be accepted
     And todo <todo_id> should be a task of project <project_id>
 
@@ -26,7 +26,7 @@ Feature: Creating projects
   # Alternate flow
 
   Scenario Outline: User can create a project with no extra parameters
-    When some project is created
+    When I create some project
     Then some project <id> should be returned
     And project <id> should exist
 
@@ -35,6 +35,6 @@ Feature: Creating projects
 
   Scenario Outline: User cannot create a project while specifying an ID
     Given some project <id> does not exist
-    When some project is created with id <id>
+    When I create some project with id <id>
     Then the request should be refused
     And project <id> should not exist

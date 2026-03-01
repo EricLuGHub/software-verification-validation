@@ -11,14 +11,14 @@ Feature: Completing TODOs
 
 	Scenario Outline: User can mark a TODO as complete
     Given some todo <id> exists
-    When todo <id> is marked as complete
+    When I make todo <id> marked as complete
     Then todo <id> should be marked as complete
 
 
   # Alternate flow
 
   Scenario Outline: User can create a TODO already marked as complete
-    When some todo is created marked as complete
+    When I create some todo marked as complete
     Then some todo <id> should be returned
     And todo <id> should exist
     And todo <id> should be marked as complete
@@ -28,6 +28,6 @@ Feature: Completing TODOs
 
   Scenario Outline: User cannot mark a nonexistent TODO as complete
     Given some todo <id> does not exist
-    When todo <id> is marked as complete
+    When I make todo <id> marked as complete
     Then the request should be refused
     And todo <id> should not exist
