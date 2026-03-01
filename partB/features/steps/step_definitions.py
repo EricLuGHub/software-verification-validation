@@ -4,10 +4,12 @@ import os
 import requests
 from behave import given
 
-
+# TODO: add guardrail for if service is already running on 4567
 @given('the API service is running')
 def step_api_service_running(context):
     """Start the Todo Manager REST API service."""
+    time.sleep(0.5)
+    
     if not hasattr(context, 'api_process') or context.api_process is None:
         partb_dir = os.path.join(os.path.dirname(__file__), '..')
         jar_path = os.path.join(partb_dir, 'runTodoManagerRestAPI-1.5.5.jar')

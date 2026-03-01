@@ -11,7 +11,8 @@ Feature:
     # Alternate flow
 
     Scenario: Rename an old category to a new course name
-        Given the API service is running
+        Given the API service is running 
         And a category named "COMP 310" exists
-        When I create a category named "COMP 310 - OS"
+        When I rename "COMP 310" to "COMP 310 - OS"
         Then the category "COMP 310 - OS" should be created successfully
+    
