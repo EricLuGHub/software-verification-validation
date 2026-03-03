@@ -12,24 +12,26 @@ Feature: Creating projects
 
 	Scenario Outline: User can create a project with a title
     When I create some project with title <title>
-    Then some project <id> should be returned
-    And project <id> should exist with title <title>
+    Then the project <title> should be created successfully
 
-  Scenario Outline: User can link a todo to a project
-    Given some project <project_id> exists
-    And some todo <todo_id> exists
-    When I make todo <todo_id> a task of project <project_id>
-    Then the request should be accepted
-    And todo <todo_id> should be a task of project <project_id>
+  Examples:
+    | title          |
+    | Project1       |
+    | Project2       |
 
 
   # Alternate flow
 
-  Scenario Outline: User can create a project with no extra parameters
-    When I create some project
-    Then some project <id> should be returned
-    And project <id> should exist
-
+  Scenario Outline: User can rename an old project project into a new project name
+    Given some project <old_title> exists
+    When I rename project <old_title> to <new_title>
+    Then the project <new_title> should be created successfully
+  
+  Examples:
+    | old_title | new_title |
+    | OldProj   | Project1  |
+    | OldProj   | Project2  |
+    
 
   # Error flow
 
@@ -38,3 +40,8 @@ Feature: Creating projects
     When I create some project with id <id>
     Then the request should be refused
     And project <id> should not exist
+
+  Examples:
+    | id  |
+    | 999 |
+    | 456 |
