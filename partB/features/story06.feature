@@ -5,7 +5,7 @@ Feature: Creating projects
   for one part of the term project.
 
 	Background:
-		Given the application is running
+		Given the API service is running
 
 
 	# Normal flow
@@ -29,8 +29,8 @@ Feature: Creating projects
   
   Examples:
     | old_title | new_title |
-    | OldProj   | Project1  |
-    | OldProj   | Project2  |
+    | OldProj1  | Project1  |
+    | OldProj2  | Project2  |
     
 
   # Error flow

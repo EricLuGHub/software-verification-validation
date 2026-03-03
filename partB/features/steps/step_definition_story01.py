@@ -47,7 +47,7 @@ def step_category_exists(context, name):
     r = context.http.post(f"{context.base_url}/categories", json=payload, timeout=5)
     assert r.status_code == 201, f"Failed to create category '{name}': {r.status_code}, body: {r.text}"
 
-@when('I rename {old_name} to {new_name}')
+@when('I rename category {old_name} to {new_name}')
 def step_rename_category(context, old_name, new_name):
     r = context.http.get(f"{context.base_url}/categories", params={"title": old_name}, timeout=5)
     assert r.status_code == 200, f"GET /categories failed: {r.status_code}, body: {r.text}"

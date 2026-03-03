@@ -22,7 +22,7 @@ Feature:
 
     Scenario Outline: Rename an old category to a new course name
         Given a category named <old_title> exists
-        When I rename <old_title> to <new_title>
+        When I rename category <old_title> to <new_title>
         Then the category <new_title> should be created successfully
 
     Examples:
