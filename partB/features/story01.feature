@@ -7,20 +7,32 @@ Feature:
 
     # Normal flow
 
-    Scenario: Create a category for a course
-        When I create a category named "COMP 310"
-        Then the category "COMP 310" should be created successfully
+    Scenario Outline: Create a category for a course
+        When I create a category named <title>
+        Then the category <title> should be created successfully
+    
+    Examples:
+        | title     |
+        | COMP 310  |
+        | COMP 250  |
+        | COMP 202  |
 
     
     # Alternate flow
 
-    Scenario: Rename an old category to a new course name
-        Given a category named "COMP 310" exists
-        When I rename "COMP 310" to "COMP 310 - OS"
-        Then the category "COMP 310 - OS" should be created successfully
+    Scenario Outline: Rename an old category to a new course name
+        Given a category named <old_title> exists
+        When I rename <old_title> to <new_title>
+        Then the category <new_title> should be created successfully
+
+    Examples:
+        | old_title | new_title       |
+        | COMP 310  | COMP 310 - OS   |
+        | COMP 250  | COMP 250 - Intro|
     
     # Error flow
 
     Scenario: Create a category with empty name
         When I create a category with an empty name
         Then the API should return an error indicating that the category name cannot be empty
+    

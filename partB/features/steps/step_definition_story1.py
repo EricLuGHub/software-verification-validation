@@ -6,14 +6,14 @@ As a McGill student, I want to create categories for each course.
 
 from behave import when, then, given
 
-@when('I create a category named "{name}"')
+@when('I create a category named {name}')
 def step_create_category(context, name):
     payload = {"title": name}
     r = context.http.post(f"{context.base_url}/categories", json=payload, timeout=5)
     context.last_response = r
     assert r.status_code == 201, f"Expected 201, got {r.status_code}, body: {r.text}"
 
-@then('the category "{name}" should be created successfully')
+@then('the category {name} should be created successfully')
 def step_verify_category(context, name):
     r = context.http.get(f"{context.base_url}/categories", params={"title": name}, timeout=5)
     assert r.status_code == 200, f"GET /categories failed: {r.status_code}, body: {r.text}"
@@ -31,7 +31,7 @@ def step_verify_category(context, name):
     found = any((isinstance(x, dict) and x.get("title") == name) for x in items)
     assert found, f'Category "{name}" not found in response: {data}'
 
-@given('a category named "{name}" exists')
+@given('a category named {name} exists')
 def step_category_exists(context, name):
 
     r = context.http.get(f"{context.base_url}/categories", params={"title": name}, timeout=5)
@@ -47,7 +47,7 @@ def step_category_exists(context, name):
     r = context.http.post(f"{context.base_url}/categories", json=payload, timeout=5)
     assert r.status_code == 201, f"Failed to create category '{name}': {r.status_code}, body: {r.text}"
 
-@when('I rename "{old_name}" to "{new_name}"')
+@when('I rename {old_name} to {new_name}')
 def step_rename_category(context, old_name, new_name):
     r = context.http.get(f"{context.base_url}/categories", params={"title": old_name}, timeout=5)
     assert r.status_code == 200, f"GET /categories failed: {r.status_code}, body: {r.text}"
