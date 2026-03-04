@@ -4,15 +4,15 @@ Feature: Deleting taskof relationships
   I accidentally created.
 
 	Background:
-		Given the application is running
+    Given the API service is running
 
 
   # Normal flow
 
 	Scenario Outline: User can delete a taskof relationship from the task's side
-    Given project with title <project_title> exists
-    And todo with title <todo_title> exists
-    And <todo_title> todo is a task of that project
+    Given some project with title <project_title> exists
+    And some todo with title <todo_title> exists
+    And todo with title <todo_title> is a task of that project
     When I delete the relationship between the two from the task's side
     Then the request should be accepted
     And the relationship should no longer exist
@@ -24,7 +24,7 @@ Feature: Deleting taskof relationships
   # Alternate flow
 
   Scenario Outline: User can delete a taskof relationship from the project's side
-    Given project with title <project_title> exists
+    Given some project with title <project_title> exists
     And some todo is a task of project <project_title>
     When I delete the relationship between the two from the project's side
     Then the request should be accepted
@@ -38,8 +38,8 @@ Feature: Deleting taskof relationships
   # Error flow
 
   Scenario Outline: User cannot delete a nonexistent taskof relationship from the task's side
-    Given a project with title <project_title> exists
-    And a todo with title <todo_title> exists
+    Given some project with title <project_title> exists
+    And some todo with title <todo_title> exists
     And a taskof relationship between the two does not exist
     When I delete the relationship between the two from the task's side
     Then the request should be refused
@@ -51,8 +51,8 @@ Feature: Deleting taskof relationships
     
 
   Scenario Outline: User cannot delete a nonexistent taskof relationship from the project's side
-    Given a project with title <project_title> exists
-    And a todo with title <todo_title> exists
+    Given some project with title <project_title> exists
+    And some todo with title <todo_title> exists
     And a taskof relationship between the two does not exist
     When I delete the relationship between the two from the project's side
     Then the request should be refused
