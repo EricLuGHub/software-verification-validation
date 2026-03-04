@@ -5,6 +5,7 @@ As a McGill student, I want to create categories for each course.
 """
 
 from behave import when, then, given
+from step_utils import extract_collection, find_by_title
 
 @when('I create a category named {name}')
 def step_create_category(context, name):
@@ -19,15 +20,7 @@ def step_verify_category(context, name):
     assert r.status_code == 200, f"GET /categories failed: {r.status_code}, body: {r.text}"
 
     data = r.json()
-
-    items = []
-    if isinstance(data, dict):
-        items = data.get("categories") or data.get("category") or data.get("items") or []
-        if isinstance(items, dict):
-            items = [items]
-    elif isinstance(data, list):
-        items = data
-
+    items = extract_collection(data, "categories")
     found = any((isinstance(x, dict) and x.get("title") == name) for x in items)
     assert found, f'Category "{name}" not found in response: {data}'
 
@@ -53,14 +46,9 @@ def step_rename_category(context, old_name, new_name):
     assert r.status_code == 200, f"GET /categories failed: {r.status_code}, body: {r.text}"
 
     data = r.json()
-
-    items = []
-
-    category_id = None
-    for item in data.get("categories", []):
-        if isinstance(item, dict) and item.get("title") == old_name:
-            category_id = item.get("id")
-            break
+    categories = extract_collection(data, "categories")
+    category = find_by_title(categories, old_name)
+    category_id = category.get("id") if category else None
 
     if not category_id:
         raise AssertionError(f"Category '{old_name}' not found")

@@ -6,30 +6,15 @@ to keep track of what's already been done.
 """
 
 from behave import when, then, given
+from step_utils import extract_collection, ensure_todo_exists
 
 @given('a todo with title {title} exists')
 def step_todo_with_title_exists(context, title):
     """Ensure a todo with the given title exists."""
-    r = context.http.get(f"{context.base_url}/todos", params={"title": title}, timeout=5)
-    assert r.status_code == 200, f"GET /todos failed: {r.status_code}, body: {r.text}"
-
-    data = r.json()
-
-    for item in data.get("todos", []):
-        if item.get("title") == title:
-            if not hasattr(context, 'todo_ids'):
-                context.todo_ids = {}
-            context.todo_ids[title] = item.get("id")
-            return
-
-    payload = {"title": title, "doneStatus": False}
-    r = context.http.post(f"{context.base_url}/todos", json=payload, timeout=5)
-    assert r.status_code == 201, f"Failed to create todo '{title}': {r.status_code}, body: {r.text}"
-    
-    response_data = r.json()
+    todo_id = ensure_todo_exists(context, title, done_status=False)
     if not hasattr(context, 'todo_ids'):
         context.todo_ids = {}
-    context.todo_ids[title] = response_data.get("id")
+    context.todo_ids[title] = todo_id
 
 
 @when('I mark todo {title} as complete')
@@ -53,7 +38,7 @@ def step_verify_todo_complete(context, title):
     assert r.status_code == 200, f"GET /todos failed: {r.status_code}, body: {r.text}"
     
     data = r.json()
-    todos = data.get("todos", [])
+    todos = extract_collection(data, "todos")
     if todos and len(todos) > 0:
         todo = todos[0]
     
@@ -96,7 +81,7 @@ def step_verify_todo_exists_with_id(context, title):
     assert r.status_code == 200, f"GET /todos/{todo_id} failed: {r.status_code}, body: {r.text}"
     
     data = r.json()
-    todos = data.get("todos", [])
+    todos = extract_collection(data, "todos")
     if todos and len(todos) > 0:
         todo = todos[0]
 
@@ -105,14 +90,6 @@ def step_verify_todo_exists_with_id(context, title):
     assert todo.get("title") == title, f"Expected title '{title}', got '{todo.get('title')}'"
 
 
-@given('some todo {id} does not exist')
-def step_todo_does_not_exist(context, id):
-    """Verify that a todo with the given ID does not exist."""
-    r = context.http.get(f"{context.base_url}/todos/{id}", timeout=5)
-    if r.status_code == 200:
-        r_delete = context.http.delete(f"{context.base_url}/todos/{id}", timeout=5)
-        assert r_delete.status_code == 200, f"Failed to delete existing todo {id}: {r_delete.status_code}, body: {r_delete.text}"
-
 
 @when('I make todo with id {id} marked as complete')
 def step_mark_nonexistent_todo_complete(context, id):
@@ -120,11 +97,4 @@ def step_mark_nonexistent_todo_complete(context, id):
     payload = {"doneStatus": True}
     r = context.http.post(f"{context.base_url}/todos/{id}", json=payload, timeout=5)
     context.last_response = r
-
-
-@then('todo {id} should not exist')
-def step_todo_should_not_exist(context, id):
-    """Verify that a todo with the given ID does not exist."""
-    r = context.http.get(f"{context.base_url}/todos/{id}", timeout=5)
-    assert r.status_code == 404, f"Expected 404 (Not Found), got {r.status_code}, body: {r.text}"
 

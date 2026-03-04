@@ -62,3 +62,42 @@ def step_default_objects_removed(context):
                 f"{r_delete.status_code}, body: {r_delete.text}"
             )
 
+
+@then('the request should be accepted')
+def step_request_accepted(context):
+    """Verify that the last request was accepted (200 OK)."""
+    r = context.last_response
+    assert r.status_code == 200, f"Expected 200, got {r.status_code}, body: {r.text}"
+
+
+@given('some project {id} does not exist')
+def step_project_does_not_exist(context, id):
+    """Verify that a project with the given ID does not exist."""
+    r = context.http.get(f"{context.base_url}/projects/{id}", timeout=5)
+    if r.status_code == 200:
+        r_delete = context.http.delete(f"{context.base_url}/projects/{id}", timeout=5)
+        assert r_delete.status_code == 200, f"Failed to delete existing project {id}: {r_delete.status_code}, body: {r_delete.text}"
+
+
+@given('some todo {id} does not exist')
+def step_todo_does_not_exist(context, id):
+    """Verify that a todo with the given ID does not exist."""
+    r = context.http.get(f"{context.base_url}/todos/{id}", timeout=5)
+    if r.status_code == 200:
+        r_delete = context.http.delete(f"{context.base_url}/todos/{id}", timeout=5)
+        assert r_delete.status_code == 200, f"Failed to delete existing todo {id}: {r_delete.status_code}, body: {r_delete.text}"
+
+
+@then('project {id} should not exist')
+def step_project_should_not_exist(context, id):
+    """Verify that a project with the given ID does not exist."""
+    r = context.http.get(f"{context.base_url}/projects/{id}", timeout=5)
+    assert r.status_code == 404, f"Expected 404 (Not Found), got {r.status_code}, body: {r.text}"
+
+
+@then('todo {id} should not exist')
+def step_todo_should_not_exist(context, id):
+    """Verify that a todo with the given ID does not exist."""
+    r = context.http.get(f"{context.base_url}/todos/{id}", timeout=5)
+    assert r.status_code == 404, f"Expected 404 (Not Found), got {r.status_code}, body: {r.text}"
+

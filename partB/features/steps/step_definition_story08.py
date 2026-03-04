@@ -6,17 +6,7 @@ to keep track of what still needs to be done.
 """
 
 from behave import given, when, then
-
-
-def _extract_todos(data):
-    if isinstance(data, dict):
-        todos = data.get("todos") or data.get("todo") or data.get("items") or []
-        if isinstance(todos, dict):
-            return [todos]
-        return todos
-    if isinstance(data, list):
-        return data
-    return []
+from step_utils import extract_collection
 
 
 def _is_incomplete(todo):
@@ -49,7 +39,7 @@ def step_todo_should_be_returned(context, title):
     assert r.status_code == 200, f"Expected 200, got {r.status_code}, body: {r.text}"
 
     data = r.json()
-    todos = _extract_todos(data)
+    todos = extract_collection(data, "todos")
 
     found = any(isinstance(item, dict) and item.get("title") == title for item in todos)
     assert found, f"Expected todo '{title}' in response, got: {data}"
@@ -61,7 +51,7 @@ def step_todo_should_not_be_returned(context, title):
     assert r.status_code == 200, f"Expected 200, got {r.status_code}, body: {r.text}"
 
     data = r.json()
-    todos = _extract_todos(data)
+    todos = extract_collection(data, "todos")
 
     found = any(isinstance(item, dict) and item.get("title") == title for item in todos)
     assert not found, f"Did not expect todo '{title}' in response, got: {data}"
@@ -73,7 +63,7 @@ def step_nothing_should_be_returned(context):
     assert r.status_code == 200, f"Expected 200, got {r.status_code}, body: {r.text}"
 
     data = r.json()
-    todos = _extract_todos(data)
+    todos = extract_collection(data, "todos")
 
     incomplete_todos = [item for item in todos if isinstance(item, dict) and _is_incomplete(item)]
     assert len(incomplete_todos) == 0, f"Expected no incomplete todos, got: {data}"
