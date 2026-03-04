@@ -1,34 +1,40 @@
-Feature: Changing descriptions
+Feature: Changing titles
   As a user,
-  I want to delete all projects whose tasks are all marked as complete
-  to clear clear up future requests.
+  I want to change the title of a project
+  to make it consistent with the other projects.
 
   Background:
-		Given the application is running
+		Given the API service is running
 
 
   # Normal flow
 
-	Scenario Outline: User can delete all projects whose tasks are all marked as complete
-    Given some project with at least one task and whose tasks are all marked as complete exists
-    And some project with no tasks exists
-    And some project with both complete and incomplete tasks exists
-    And some project with at least one task and whose tasks are all marked as incomplete exists
-    When I delete all projects whose tasks are all marked as complete
-    Then the request should be accepted
-    And only projects of the first and second type should no longer exist
+	Scenario Outline: User can change a project title through a POST request
+    Given some project <title_a> exists
+    When I change its title to <title_b> through a POST request
+    Then its title should be <title_b>
+    And nothing else should change
 
 
   # Alternate flow
 
-  Scenario Outline: User can delete all projects whose tasks are all marked as complete, even if there are no such projects
-    Given some project with both complete and incomplete tasks exists
-    And some project with at least one task and whose tasks are all marked as incomplete exists
-    When I delete all projects whose tasks are all marked as complete
-    Then the request should be accepted
-    And nothing should change
+  Scenario Outline: User can change a project title through a PUT request
+    Given some project <title_a> exists
+    When I change its title to <title_b> through a PUT request
+    Then its title should be <title_b>
+    And nothing else should change
 
 
   # Error flow
 
-  Scenario Outline: User cannot
+  Scenario Outline: User cannot change the title of a nonexistent project through a POST request
+    Given some project <project> does not exist
+    When I change its title to <title> through at POST request
+    Then the request should be refused
+    And project <project> should not exist
+
+  Scenario Outline: User cannot change the title of a nonexistent project through a PUT request
+    Given some project <project> does not exist
+    When I change its title to <title> through at PUT request
+    Then the request should be refused
+    And project <project> should not exist
