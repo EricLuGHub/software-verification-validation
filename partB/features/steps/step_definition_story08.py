@@ -20,8 +20,7 @@ def _extract_todos(data):
 
 
 def _is_incomplete(todo):
-    value = todo.get("doneStatus")
-    return value in (False, "false", "False")
+    return todo.get("doneStatus") == "false"
 
 
 @given('some todo with title {title} exists marked as complete')
