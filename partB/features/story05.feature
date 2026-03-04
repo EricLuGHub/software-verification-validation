@@ -33,3 +33,10 @@ Feature: Creating taskof relationships
     And some project <id> does not exist
     When I make the todo a task of project <id>
     Then the request should be refused
+
+  Scenario Outline: User cannot create an already existing taskof relationship
+    Given some project exists
+    And some todo is a task of that project
+    When I make the todo a task of that project
+    Then the request should be refused
+    And nothing should change
