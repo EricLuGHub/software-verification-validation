@@ -6,13 +6,7 @@ to know what deliverables are expected.
 """
 
 from behave import given, when, then
-from step_utils import (
-    extract_collection,
-    find_by_title,
-    ensure_project_exists,
-    ensure_todo_exists,
-    ensure_task_relationship,
-)
+from step_utils import ensure_project_exists
 
 
 @given('some project {project_title} with no tasks exists')
