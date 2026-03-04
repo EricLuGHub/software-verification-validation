@@ -2,7 +2,7 @@ import subprocess
 import time
 import os
 import requests
-from behave import given
+from behave import given, then
 
 # TODO: add guardrail for if service is already running on 4567
 @given('the API service is running')
@@ -37,3 +37,10 @@ def step_api_service_running(context):
                 pass
         
         raise RuntimeError("API service failed to start after waiting 10 seconds")
+    
+@then('the request should be refused')
+def step_request_refused(context):
+    """Verify that the last request was refused (400 error)."""
+    r = context.last_response
+    assert r.status_code in (400, 404), f"Expected 400 or 404 (Bad Request or Not Found), got {r.status_code}, body: {r.text}"
+

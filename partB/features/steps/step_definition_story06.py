@@ -92,11 +92,6 @@ def step_create_project_with_id(context, id):
     context.last_response = r
 
 
-@then('the request should be refused')
-def step_request_refused(context):
-    """Verify that the last request was refused (400 error)."""
-    r = context.last_response
-    assert r.status_code == 400, f"Expected 400 (Bad Request), got {r.status_code}, body: {r.text}"
 
 
 @then('project {id} should not exist')
