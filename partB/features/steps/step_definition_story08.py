@@ -1,0 +1,86 @@
+"""
+
+As an ECSE 429 student, I want to be able to list out all incomplete TODOs
+to keep track of what still needs to be done.
+
+"""
+
+from behave import given, when, then
+
+
+def _extract_todos(data):
+    if isinstance(data, dict):
+        todos = data.get("todos") or data.get("todo") or data.get("items") or []
+        if isinstance(todos, dict):
+            return [todos]
+        return todos
+    if isinstance(data, list):
+        return data
+    return []
+
+
+def _is_incomplete(todo):
+    value = todo.get("doneStatus")
+    return value in (False, "false", "False")
+
+
+@given('some todo with title {title} exists marked as complete')
+def step_todo_exists_complete(context, title):
+    payload = {"title": title, "doneStatus": True}
+    r = context.http.post(f"{context.base_url}/todos", json=payload, timeout=5)
+    assert r.status_code == 201, f"Expected 201, got {r.status_code}, body: {r.text}"
+
+
+@given('some todo with title {title} exists marked as incomplete')
+def step_todo_exists_incomplete(context, title):
+    payload = {"title": title, "doneStatus": False}
+    r = context.http.post(f"{context.base_url}/todos", json=payload, timeout=5)
+    assert r.status_code == 201, f"Expected 201, got {r.status_code}, body: {r.text}"
+
+
+@when('I list every todo marked as incomplete')
+def step_list_incomplete_todos(context):
+    r = context.http.get(f"{context.base_url}/todos", params={"doneStatus": "false"}, timeout=5)
+    context.last_response = r
+
+
+@then('todo {title} should be returned')
+def step_todo_should_be_returned(context, title):
+    r = context.last_response
+    assert r.status_code == 200, f"Expected 200, got {r.status_code}, body: {r.text}"
+
+    data = r.json()
+    todos = _extract_todos(data)
+
+    found = any(isinstance(item, dict) and item.get("title") == title for item in todos)
+    assert found, f"Expected todo '{title}' in response, got: {data}"
+
+
+@then('todo {title} should not be returned')
+def step_todo_should_not_be_returned(context, title):
+    r = context.last_response
+    assert r.status_code == 200, f"Expected 200, got {r.status_code}, body: {r.text}"
+
+    data = r.json()
+    todos = _extract_todos(data)
+
+    found = any(isinstance(item, dict) and item.get("title") == title for item in todos)
+    assert not found, f"Did not expect todo '{title}' in response, got: {data}"
+
+
+@then('nothing should be returned')
+def step_nothing_should_be_returned(context):
+    r = context.last_response
+    assert r.status_code == 200, f"Expected 200, got {r.status_code}, body: {r.text}"
+
+    data = r.json()
+    todos = _extract_todos(data)
+
+    incomplete_todos = [item for item in todos if isinstance(item, dict) and _is_incomplete(item)]
+    assert len(incomplete_todos) == 0, f"Expected no incomplete todos, got: {data}"
+
+
+@when('I list every todo marked as {invalid_status}')
+def step_list_invalid_status(context, invalid_status):
+    r = context.http.get(f"{context.base_url}/todos", params={"doneStatus": invalid_status}, timeout=5)
+    context.last_response = r

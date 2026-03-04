@@ -44,3 +44,21 @@ def step_request_refused(context):
     r = context.last_response
     assert r.status_code in (400, 404), f"Expected 400 or 404 (Bad Request or Not Found), got {r.status_code}, body: {r.text}"
 
+
+@given('the default objects have been removed')
+def step_default_objects_removed(context):
+    """Remove default todos created by the API (IDs 1 and 2)."""
+    for todo_id in ("1", "2"):
+        r = context.http.get(f"{context.base_url}/todos/{todo_id}", timeout=5)
+        assert r.status_code in (200, 404), (
+            f"Unexpected status while checking default todo {todo_id}: "
+            f"{r.status_code}, body: {r.text}"
+        )
+
+        if r.status_code == 200:
+            r_delete = context.http.delete(f"{context.base_url}/todos/{todo_id}", timeout=5)
+            assert r_delete.status_code == 200, (
+                f"Failed to delete default todo {todo_id}: "
+                f"{r_delete.status_code}, body: {r_delete.text}"
+            )
+
