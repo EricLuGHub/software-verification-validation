@@ -15,20 +15,6 @@ from step_utils import (
 )
 
 
-@given('some relationship project with title {project_title} exists')
-def step_project_exists(context, project_title):
-    project_id = ensure_project_exists(context, project_title)
-    context.current_project_title = project_title
-    context.current_project_id = project_id
-
-
-@given('some todo with title {todo_title} exists')
-def step_todo_exists(context, todo_title):
-    todo_id = ensure_todo_exists(context, todo_title)
-    context.current_todo_title = todo_title
-    context.current_todo_id = todo_id
-
-
 @given('todo with title {todo_title} is a task of that project')
 def step_todo_is_task_of_project(context, todo_title):
     project_id = getattr(context, "current_project_id", None)

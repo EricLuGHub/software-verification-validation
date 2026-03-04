@@ -30,22 +30,6 @@ def step_verify_project(context, title):
     assert found, f'Project "{title}" not found in response: {data}'
 
 
-@given('some project {title} exists')
-def step_project_exists(context, title):
-    r = context.http.get(f"{context.base_url}/projects", params={"title": title}, timeout=5)
-    assert r.status_code == 200, f"GET /projects failed: {r.status_code}, body: {r.text}"
-
-    data = r.json()
-
-    for item in data.get("projects", []):
-        if item.get("title") == title:
-            return
-
-    payload = {"title": title}
-    r = context.http.post(f"{context.base_url}/projects", json=payload, timeout=5)
-    assert r.status_code == 201, f"Failed to create project '{title}': {r.status_code}, body: {r.text}"
-
-
 @when('I rename project {old_title} to {new_title}')
 def step_rename_project(context, old_title, new_title):
     r = context.http.get(f"{context.base_url}/projects", params={"title": old_title}, timeout=5)

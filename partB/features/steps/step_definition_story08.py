@@ -33,18 +33,6 @@ def step_list_incomplete_todos(context):
     context.last_response = r
 
 
-@then('todo {title} should be returned')
-def step_todo_should_be_returned(context, title):
-    r = context.last_response
-    assert r.status_code == 200, f"Expected 200, got {r.status_code}, body: {r.text}"
-
-    data = r.json()
-    todos = extract_collection(data, "todos")
-
-    found = any(isinstance(item, dict) and item.get("title") == title for item in todos)
-    assert found, f"Expected todo '{title}' in response, got: {data}"
-
-
 @then('todo {title} should not be returned')
 def step_todo_should_not_be_returned(context, title):
     r = context.last_response
@@ -55,18 +43,6 @@ def step_todo_should_not_be_returned(context, title):
 
     found = any(isinstance(item, dict) and item.get("title") == title for item in todos)
     assert not found, f"Did not expect todo '{title}' in response, got: {data}"
-
-
-@then('nothing should be returned')
-def step_nothing_should_be_returned(context):
-    r = context.last_response
-    assert r.status_code == 200, f"Expected 200, got {r.status_code}, body: {r.text}"
-
-    data = r.json()
-    todos = extract_collection(data, "todos")
-
-    incomplete_todos = [item for item in todos if isinstance(item, dict) and _is_incomplete(item)]
-    assert len(incomplete_todos) == 0, f"Expected no incomplete todos, got: {data}"
 
 
 @when('I list every todo marked as {invalid_status}')

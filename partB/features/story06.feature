@@ -36,10 +36,10 @@ Feature: Creating projects
   # Error flow
 
   Scenario Outline: User cannot create a project while specifying an ID
-    Given some project <id> does not exist
+    Given some project with id <id> does not exist
     When I create some project with id <id>
     Then the request should be refused
-    And project <id> should not exist
+    And project with id <id> should not exist
 
   Examples:
     | id  |

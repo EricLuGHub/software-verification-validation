@@ -28,7 +28,7 @@ Feature: Changing descriptions
   # Error flow
 
   Scenario Outline: User cannot change the description of a nonexistent TODO
-    Given some todo <id> does not exist
+    Given some todo with id <id> does not exist
     When I change todo <id>'s description to <description>
     Then the request should be refused
-    And todo <id> should not exist
+    And todo with id <id> should not exist

@@ -30,7 +30,7 @@ Feature: Creating taskof relationships
 
   Scenario Outline: User cannot create a taskof relationship between a todo and a nonexistent project
     Given some todo exists
-    And some project <id> does not exist
+    And some project with id <id> does not exist
     When I make the todo a task of project <id>
     Then the request should be refused
 

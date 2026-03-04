@@ -10,7 +10,7 @@ Feature: Deleting taskof relationships
   # Normal flow
 
 	Scenario Outline: User can delete a TODO
-  Given some deletion todo with title <todo> exists
+    Given some todo <todo> exists
     When I delete todo <todo>
     Then the request should be accepted
     And todo with title <todo> should not exist
@@ -23,8 +23,8 @@ Feature: Deleting taskof relationships
   # Alternate flow
 
   Scenario Outline: User can delete a TODO with existing taskof relationships
-    Given some deletion project named <project> exists
-    And some deletion todo <todo> is a task of that project
+    Given some project <project> exists
+    And some todo <todo> is a task of that project
     When I delete todo <todo>
     Then the request should be accepted
     And todo with title <todo> should not exist
@@ -38,7 +38,7 @@ Feature: Deleting taskof relationships
   # Error flow
 
   Scenario Outline: User cannot delete a nonexistent TODO
-    Given some deletion todo with title <todo> does not exist
+    Given some todo <todo> does not exist
     When I delete todo <todo>
     Then the request should be refused
     And todo with title <todo> should not exist

@@ -36,10 +36,10 @@ Feature: Completing TODOs
   # Error flow
 
   Scenario Outline: Error flow:User cannot mark a nonexistent TODO as complete
-    Given some todo <id> does not exist
+    Given some todo with id <id> does not exist
     When I make todo with id <id> marked as complete
     Then the request should be refused
-    And todo <id> should not exist
+    And todo with id <id> should not exist
   Examples:
       | id  |
       | 999 |

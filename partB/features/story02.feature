@@ -11,7 +11,7 @@ Feature: Listing tasks of a project
 
 	Scenario Outline: User can list tasks of a project
     Given some project <project_title> exists
-    And some todo <todo_title> a task of that project
+    And some todo <todo_title> is a task of that project
     When I list tasks of that project
     Then todo <todo_title> should be returned
   Examples:
@@ -23,11 +23,10 @@ Feature: Listing tasks of a project
   # Alternate flow
 
   Scenario Outline: User can list tasks of a project, even when there are none
-    Given some project <project_title> has no tasks
-    And some todo <project_title> exists
-    When I list tasks of project <project_title>
-    Then the request is accepted
-    But nothing is returned
+    Given some project <project_title> with no tasks exists
+    When I list tasks of that project
+    Then the request should be accepted
+    And nothing should be returned
   Examples:
       | project_title |
       | Project1      |
@@ -39,7 +38,7 @@ Feature: Listing tasks of a project
   Scenario Outline: User cannot list tasks of a nonexistent project
     Given some project <project> does not exist
     When I list tasks of project <project>
-    Then the request is refused
+    Then the request should be refused
   Examples:
       | project  |
       | ProjectX |
