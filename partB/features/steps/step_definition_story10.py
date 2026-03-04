@@ -74,16 +74,7 @@ def step_deletion_todo_does_not_exist(context, todo_title):
 def step_delete_todo_by_title(context, todo_title):
     todo_id = None
 
-    if hasattr(context, 'todo_ids'):
-        todo_id = context.todo_ids.get(todo_title)
-
-    if not todo_id:
-        r_lookup = context.http.get(f"{context.base_url}/todos", params={"title": todo_title}, timeout=5)
-        assert r_lookup.status_code == 200, f"GET /todos failed: {r_lookup.status_code}, body: {r_lookup.text}"
-        todos = extract_collection(r_lookup.json(), 'todos')
-        todo = find_by_title(todos, todo_title)
-        todo_id = todo.get('id') if todo else '99999999'
-
+    todo_id = context.todo_ids.get(todo_title)
     context.current_todo_title = todo_title
     context.current_todo_id = todo_id
 

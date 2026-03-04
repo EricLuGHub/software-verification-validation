@@ -10,20 +10,28 @@ Feature: Listing tasks of a project
   # Normal flow
 
 	Scenario Outline: User can list tasks of a project
-    Given some project exists
-    And some todo is a task of that project
+    Given some project <project_title> exists
+    And some todo <todo_title> a task of that project
     When I list tasks of that project
-    Then that todo should be returned
+    Then todo <todo_title> should be returned
+  Examples:
+      | project_title | todo_title |
+      | Project1      | Todo1      |
+      | Project2      | TaskA      |
 
 
   # Alternate flow
 
   Scenario Outline: User can list tasks of a project, even when there are none
-    Given some project has no tasks
-    And some todo exists
-    When I list tasks of that project
+    Given some project <project_title> has no tasks
+    And some todo <project_title> exists
+    When I list tasks of project <project_title>
     Then the request is accepted
     But nothing is returned
+  Examples:
+      | project_title |
+      | Project1      |
+      | Project2      |
 
 
   # Error flow
@@ -32,3 +40,7 @@ Feature: Listing tasks of a project
     Given some project <project> does not exist
     When I list tasks of project <project>
     Then the request is refused
+  Examples:
+      | project  |
+      | ProjectX |
+      | ProjectY |
