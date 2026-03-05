@@ -14,7 +14,11 @@ Feature: Changing titles
     When I change its title to <title_b> through a POST request
     Then its title should be <title_b>
     And nothing else should change
-
+  
+  Examples:
+      | title_a  | title_b  |
+      | Project1 | ProjectA |
+      | Project2 | ProjectB |
 
   # Alternate flow
 

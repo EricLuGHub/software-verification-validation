@@ -80,7 +80,7 @@ def step_project_id_does_not_exist(context, id):
         assert r_delete.status_code == 200, f"Failed to delete existing project {id}: {r_delete.status_code}, body: {r_delete.text}"
 
 
-@given('some todo with id with id {id} does not exist')
+@given('some todo with id {id} does not exist')
 def step_todo_id_does_not_exist(context, id):
     """Verify that a todo with the given ID does not exist."""
     r = context.http.get(f"{context.base_url}/todos/{id}", timeout=5)

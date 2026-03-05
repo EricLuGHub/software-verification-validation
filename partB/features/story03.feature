@@ -4,7 +4,7 @@ Feature: Changing descriptions
   since I was allowed an extension.
 
   Background:
-		Given the application is running
+		Given the API service is running
 
 
   # Normal flow
@@ -14,7 +14,10 @@ Feature: Changing descriptions
     When I change todo <todo_title> description to <description_b>
     Then the request should be accepted
     And it should have description <description_b>
-
+  Examples:
+      | todo_title | description_a       | description_b       |
+      | Todo1      | Due next week       | Due next month      |
+      | TaskA      | Due today           | Due tomorrow        |
 
   # Alternate flow
 
@@ -25,15 +28,15 @@ Feature: Changing descriptions
     And it should have description <description_b>
   
   Examples:
-      | todo_title | description_a       | description_b       | description         |
-      | Todo1      | Due next week       | Due next month      | Due next week       |
-      | TaskA      |                     | Due tomorrow        | Due today           |
+      | todo_title | description_a       | description_b       |
+      | Todo1      | Due next week       | Due next month      |
+      | TaskA      | Due now             | Due tomorrow        |
 
   # Error flow
 
   Scenario Outline: User cannot change the description of a nonexistent TODO
     Given some todo with id <id> does not exist
-    When I change todo <id> s description to <description>
+    When I try to change todo <id> s description to <description>
     Then the request should be refused
     And todo with id <id> should not exist
   Examples:
