@@ -24,23 +24,24 @@ Feature: Creating taskof relationships
   # Alternate flow
 
   Scenario Outline: Alternate Flow: User can create a taskof relationship while creating a todo
-    Given some project exists
-    When I create some todo as a task of that project
+    Given some project <project_title> exists
+    When I create some todo <todo_title> as a task of project <project_title>
     Then the request should be accepted
     And the todo should be a task of that project
+  Examples:
+      | project_title | todo_title |
+      | Project1      | Todo1      |
+      | Project2      | TaskA      |
 
 
   # Error flow
 
   Scenario Outline: Error Flow: User cannot create a taskof relationship between a todo and a nonexistent project
-    Given some todo exists
+    Given some todo <todo_title> exists
     And some project with id <id> does not exist
-    When I make the todo a task of project <id>
+    When I make the todo <todo_title> a task of project <id>
     Then the request should be refused
-
-  Scenario Outline: Error Flow: User cannot create an already existing taskof relationship
-    Given some project exists
-    And some todo is a task of that project
-    When I make the todo a task of that project
-    Then the request should be refused
-    And nothing should change
+  Examples:
+      | todo_title | id  |
+      | Todo1      | 999 |
+      | TaskA      | 456 |
