@@ -10,11 +10,15 @@ Feature: Creating taskof relationships
   # Normal flow
 
 	Scenario Outline: Normal Flow: User can create a taskof relationship between an already existing todo and an already existing project
-    Given some project exists
-    And some todo exists
-    When I make the todo a task of that project
+    Given some project <project_title> exists
+    And some todo <todo_title> exists
+    When I make the todo <todo_title> a task of project <project_title>
     Then the request should be accepted
-    And the todo should be a task of that project
+    And the todo <todo_title> should be a task of project <project_title>
+  Examples:
+      | project_title | todo_title |
+      | Project1      | Todo1      |
+      | Project2      | TaskA      |
 
 
   # Alternate flow
