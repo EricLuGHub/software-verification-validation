@@ -13,7 +13,7 @@ Feature: Creating taskof relationships
     Given some project <project_title> exists
     And some todo <todo_title> exists
     When I make the todo <todo_title> a task of project <project_title>
-    Then the request should be accepted
+  Then the taskof relationship request should be accepted
     And the todo <todo_title> should be a task of project <project_title>
   Examples:
       | project_title | todo_title |
@@ -26,7 +26,7 @@ Feature: Creating taskof relationships
   Scenario Outline: Alternate Flow: User can create a taskof relationship while creating a todo
     Given some project <project_title> exists
     When I create some todo <todo_title> as a task of project <project_title>
-    Then the request should be accepted
+    Then the taskof relationship request should be accepted
     And the todo should be a task of that project
   Examples:
       | project_title | todo_title |
