@@ -22,15 +22,15 @@ Feature: Changing descriptions
   # Alternate flow
 
   Scenario Outline: Alternate Flow: User can add a description to a TODO without one
-    Given some todo <todo_title> exists with description <description_a>
-    When I change its description to <description_b>
+    Given some todo <todo_title> exists with no description
+    When I change its description to <description>
     Then the request should be accepted
-    And it should have description <description_b>
+    And it should have description <description>
   
   Examples:
-      | todo_title | description_a       | description_b       |
-      | Todo1      | Due next week       | Due next month      |
-      | TaskA      | Due now             | Due tomorrow        |
+      | todo_title | description         |
+      | Todo1      | Due next week       | 
+      | TaskA      | Due now             | 
 
   # Error flow
 

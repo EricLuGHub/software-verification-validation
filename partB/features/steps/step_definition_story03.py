@@ -12,32 +12,26 @@ from step_utils import extract_collection, ensure_todo_exists
 @given('some todo {todo_title} exists with description {description}')
 def step_todo_exists_with_description(context, todo_title, description):
     """Ensure a todo with the given title and description exists."""
-    r = context.http.get(f"{context.base_url}/todos", params={"title": todo_title}, timeout=5)
-    assert r.status_code == 200, f"GET /todos failed: {r.status_code}, body: {r.text}"
-
-    todos = extract_collection(r.json(), "todos")
-    existing = None
-    for item in todos:
-        if isinstance(item, dict) and item.get("title") == todo_title:
-            existing = item
-            break
-
-    if existing:
-        todo_id = existing.get("id")
-    else:
-        payload = {"title": todo_title}
-        if description:  
-            payload["description"] = description
-        
-        create = context.http.post(f"{context.base_url}/todos", json=payload, timeout=5)
-        assert create.status_code == 201, f"Failed to create todo '{todo_title}': {create.status_code}, body: {create.text}"
-        todo_id = create.json().get("id")
+    
+    payload = {"title": todo_title}
+    if description:  
+        payload["description"] = description
+    
+    create = context.http.post(f"{context.base_url}/todos", json=payload, timeout=5)
+    assert create.status_code == 201, f"Failed to create todo '{todo_title}': {create.status_code}, body: {create.text}"
+    todo_id = create.json().get("id")
 
     if not hasattr(context, 'todo_ids'):
         context.todo_ids = {}
     context.todo_ids[todo_title] = todo_id
     context.current_todo_title = todo_title
     context.current_todo_id = todo_id
+
+@given('some todo {todo_title} exists with no description')
+def step_todo_exists_with_no_description(context, todo_title):
+    """Ensure a todo with the given title exists and has no description."""
+    step_todo_exists_with_description(context, todo_title, description=None)
+
 
 
 @when('I change todo {todo_title} description to {new_description}')
