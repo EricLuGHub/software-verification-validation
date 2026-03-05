@@ -19,16 +19,24 @@ Feature: Changing descriptions
   # Alternate flow
 
   Scenario Outline: User can add a description to a TODO without one
-    Given some todo exists
-    When I change its description to <description>
+    Given some todo <todo_title> exists with description <description_a>
+    When I change its description to <description_b>
     Then the request should be accepted
-    And it should have description <description>
-
+    And it should have description <description_b>
+  
+  Examples:
+      | todo_title | description_a       | description_b       | description         |
+      | Todo1      | Due next week       | Due next month      | Due next week       |
+      | TaskA      |                     | Due tomorrow        | Due today           |
 
   # Error flow
 
   Scenario Outline: User cannot change the description of a nonexistent TODO
     Given some todo with id <id> does not exist
-    When I change todo <id>'s description to <description>
+    When I change todo <id> s description to <description>
     Then the request should be refused
     And todo with id <id> should not exist
+  Examples:
+      | id  | description         |
+      | 999 | Due next week       |
+      | 888 | Due next month      |
