@@ -9,7 +9,7 @@ Feature: Creating taskof relationships
 
   # Normal flow
 
-	Scenario Outline: User can create a taskof relationship between an already existing todo and an already existing project
+	Scenario Outline: Normal Flow: User can create a taskof relationship between an already existing todo and an already existing project
     Given some project exists
     And some todo exists
     When I make the todo a task of that project
@@ -19,7 +19,7 @@ Feature: Creating taskof relationships
 
   # Alternate flow
 
-  Scenario Outline: User can create a taskof relationship while creating a todo
+  Scenario Outline: Alternate Flow: User can create a taskof relationship while creating a todo
     Given some project exists
     When I create some todo as a task of that project
     Then the request should be accepted
@@ -28,13 +28,13 @@ Feature: Creating taskof relationships
 
   # Error flow
 
-  Scenario Outline: User cannot create a taskof relationship between a todo and a nonexistent project
+  Scenario Outline: Error Flow: User cannot create a taskof relationship between a todo and a nonexistent project
     Given some todo exists
     And some project with id <id> does not exist
     When I make the todo a task of project <id>
     Then the request should be refused
 
-  Scenario Outline: User cannot create an already existing taskof relationship
+  Scenario Outline: Error Flow: User cannot create an already existing taskof relationship
     Given some project exists
     And some todo is a task of that project
     When I make the todo a task of that project

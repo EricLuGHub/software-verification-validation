@@ -9,7 +9,7 @@ Feature: Completing TODOs
 
 	# Normal flow
 
-	Scenario Outline: Normal Flow: User can mark a TODO as complete
+  Scenario Outline: Normal Flow: User can mark a TODO as complete
     Given a todo with title <todo_title> exists
     When I mark todo <todo_title> as complete
     Then todo <todo_title> should be marked as complete
@@ -22,7 +22,7 @@ Feature: Completing TODOs
 
   # Alternate flow
 
-  Scenario Outline: Alternate flow: User can create a TODO already marked as complete
+  Scenario Outline: Alternate Flow: User can create a TODO already marked as complete
     When I create a todo with title <todo_title> and mark as complete
     Then the todo <todo_title> should be returned
     And todo <todo_title> should exist with the correct id
@@ -35,7 +35,7 @@ Feature: Completing TODOs
 
   # Error flow
 
-  Scenario Outline: Error flow:User cannot mark a nonexistent TODO as complete
+  Scenario Outline: Error Flow: User cannot mark a nonexistent TODO as complete
     Given some todo with id <id> does not exist
     When I make todo with id <id> marked as complete
     Then the request should be refused

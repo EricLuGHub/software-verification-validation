@@ -9,7 +9,7 @@ Feature: Changing descriptions
 
   # Normal flow
 
-	Scenario Outline: User can change a TODO's description
+	Scenario Outline: Normal Flow: User can change a TODO's description
     Given some todo <todo_title> exists with description <description_a>
     When I change todo <todo_title> description to <description_b>
     Then the request should be accepted
@@ -21,7 +21,7 @@ Feature: Changing descriptions
 
   # Alternate flow
 
-  Scenario Outline: User can add a description to a TODO without one
+  Scenario Outline: Alternate Flow: User can add a description to a TODO without one
     Given some todo <todo_title> exists with description <description_a>
     When I change its description to <description_b>
     Then the request should be accepted
@@ -34,7 +34,7 @@ Feature: Changing descriptions
 
   # Error flow
 
-  Scenario Outline: User cannot change the description of a nonexistent TODO
+  Scenario Outline: Error Flow: User cannot change the description of a nonexistent TODO
     Given some todo with id <id> does not exist
     When I try to change todo <id> s description to <description>
     Then the request should be refused

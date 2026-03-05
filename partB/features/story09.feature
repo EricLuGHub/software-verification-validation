@@ -9,7 +9,7 @@ Feature: Deleting taskof relationships
 
   # Normal flow
 
-	Scenario Outline: User can delete a taskof relationship from the task's side
+	Scenario Outline: Normal Flow: User can delete a taskof relationship from the task's side
     Given some project <project_title> exists
     And some todo <todo_title> exists
     And todo with title <todo_title> is a task of that project
@@ -23,7 +23,7 @@ Feature: Deleting taskof relationships
 
   # Alternate flow
 
-  Scenario Outline: User can delete a taskof relationship from the project's side
+  Scenario Outline: Alternate Flow: User can delete a taskof relationship from the project's side
     Given some project <project_title> exists
     And some todo is a task of project <project_title>
     When I delete the relationship between the two from the project's side
@@ -37,7 +37,7 @@ Feature: Deleting taskof relationships
 
   # Error flow
 
-  Scenario Outline: User cannot delete a nonexistent taskof relationship from the task's side
+  Scenario Outline: Error Flow: User cannot delete a nonexistent taskof relationship from the task's side
     Given some project <project_title> exists
     And some todo <todo_title> exists
     And a taskof relationship between the two does not exist
@@ -50,7 +50,7 @@ Feature: Deleting taskof relationships
       | Project2      | Todo2      |
     
 
-  Scenario Outline: User cannot delete a nonexistent taskof relationship from the project's side
+  Scenario Outline: Error Flow: User cannot delete a nonexistent taskof relationship from the project's side
     Given some project <project_title> exists
     And some todo <todo_title> exists
     And a taskof relationship between the two does not exist

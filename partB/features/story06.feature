@@ -10,7 +10,7 @@ Feature: Creating projects
 
 	# Normal flow
 
-	Scenario Outline: User can create a project with a title
+	Scenario Outline: Normal Flow: User can create a project with a title
     When I create some project with title <title>
     Then the project <title> should be created successfully
 
@@ -22,7 +22,7 @@ Feature: Creating projects
 
   # Alternate flow
 
-  Scenario Outline: User can rename an old project project into a new project name
+  Scenario Outline: Alternate Flow: User can rename an old project project into a new project name
     Given some project <old_title> exists
     When I rename project <old_title> to <new_title>
     Then the project <new_title> should be created successfully
@@ -35,7 +35,7 @@ Feature: Creating projects
 
   # Error flow
 
-  Scenario Outline: User cannot create a project while specifying an ID
+  Scenario Outline: Error Flow: User cannot create a project while specifying an ID
     Given some project with id <id> does not exist
     When I create some project with id <id>
     Then the request should be refused

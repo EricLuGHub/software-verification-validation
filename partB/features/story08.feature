@@ -10,7 +10,7 @@ Feature: Listing incomplete TODOs
 
   # Normal flow
 
-	Scenario Outline: User can list only incomplete TODOs
+	Scenario Outline: Normal Flow: User can list only incomplete TODOs
     Given some todo with title <title_a> exists marked as complete
     And some todo with title <title_b> exists marked as incomplete
     When I list every todo marked as incomplete
@@ -23,7 +23,7 @@ Feature: Listing incomplete TODOs
 
   # Alternate flow
 
-  Scenario Outline: User can list only incomplete TODOs even when there are none
+  Scenario Outline: Alternate Flow: User can list only incomplete TODOs even when there are none
     Given some todo with title <title> exists marked as complete
     When I list every todo marked as incomplete
     Then nothing should be returned
@@ -35,7 +35,7 @@ Feature: Listing incomplete TODOs
 
   # Error flow
 
-  Scenario Outline: User cannot filter TODOs by an invalid status type
+  Scenario Outline: Error Flow: User cannot filter TODOs by an invalid status type
     When I list every todo marked as <invalid_status>
     Then the request should be refused
   Examples:

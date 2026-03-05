@@ -9,7 +9,7 @@ Feature: Listing tasks of a project
 
   # Normal flow
 
-	Scenario Outline: User can list tasks of a project
+	Scenario Outline: Normal Flow: User can list tasks of a project
     Given some project <project_title> exists
     And some todo <todo_title> is a task of that project
     When I list tasks of that project
@@ -22,7 +22,7 @@ Feature: Listing tasks of a project
 
   # Alternate flow
 
-  Scenario Outline: User can list tasks of a project, even when there are none
+  Scenario Outline: Alternate Flow: User can list tasks of a project, even when there are none
     Given some project <project_title> with no tasks exists
     When I list tasks of that project
     Then the request should be accepted
@@ -35,7 +35,7 @@ Feature: Listing tasks of a project
 
   # Error flow
 
-  Scenario Outline: User cannot list tasks of a nonexistent project
+  Scenario Outline: Error Flow: User cannot list tasks of a nonexistent project
     Given some project <project> does not exist
     When I list tasks of project <project>
     Then the request should be refused
