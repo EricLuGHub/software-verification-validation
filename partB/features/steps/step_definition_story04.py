@@ -108,15 +108,27 @@ def step_verify_project_title_changed(context, title_b):
     )
 
 
-@then('nothing else should change for project {title_b}')
-def step_verify_nothing_else_changed(context):
+@then('nothing else should change for project {title}')
+def step_verify_nothing_else_changed(context, title):
     project_id = getattr(context, "story04_target_project_id", None)
     before_project = getattr(context, "story04_before_project", None)
 
+    r = context.http.get(f"{context.base_url}/projects/{project_id}", params={"title": title}, timeout=5)
+    assert r.status_code == 200, f"GET /projects/{project_id} failed: {r.status_code}, body: {r.text}"
 
+    projects = extract_collection(r.json(), "projects")
+    assert projects, f"No project returned for id={project_id}: {r.json()}"
 
+    after_project = projects[0]
 
+    before_copy = dict(before_project)
+    after_copy = dict(after_project)
+    before_copy.pop("title", None)
+    after_copy.pop("title", None)
 
+    assert before_copy == after_copy, (
+        f"Fields other than title changed. Before={before_copy}, After={after_copy}"
+    )
     
 
 @then('project titled {project} should not exist')
