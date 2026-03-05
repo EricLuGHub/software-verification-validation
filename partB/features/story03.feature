@@ -10,8 +10,8 @@ Feature: Changing descriptions
   # Normal flow
 
 	Scenario Outline: User can change a TODO's description
-    Given some todo exists with description <description_a>
-    When I change its description to <description_b>
+    Given some todo <todo_title> exists with description <description_a>
+    When I change todo <todo_title> description to <description_b>
     Then the request should be accepted
     And it should have description <description_b>
 
