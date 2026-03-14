@@ -85,8 +85,7 @@ def step_change_project_title_put(context, title, title_b):
         context.story04_before_all_projects = None
 
     payload = {"title": title_b}
-    if project and project.get("description"):
-        payload["description"] = project.get("description")
+    
     r = context.http.put(f"{context.base_url}/projects/{project_id}", json=payload, timeout=5)
     context.last_response = r
 
