@@ -3,6 +3,28 @@ import time
 import requests
 
 
+import random
+
+def before_feature(context, feature):
+    shuffle_enabled = context.config.userdata.get("shuffle", "false") == "true"
+
+    if shuffle_enabled:
+        if hasattr(feature, "run_items") and isinstance(feature.run_items, list):
+            random.shuffle(feature.run_items)
+            for item in feature.run_items:
+                if hasattr(item, "scenarios") and isinstance(item.scenarios, list):
+                    random.shuffle(item.scenarios)
+
+        if hasattr(feature, "iter_scenario_outlines"):
+            for outline in feature.iter_scenario_outlines():
+                for example in getattr(outline, "examples", []):
+                    table = getattr(example, "table", None)
+                    rows = getattr(table, "rows", None)
+                    if rows:
+                        random.shuffle(rows)
+                        table.modified = True
+
+
 def before_scenario(context, scenario):
     context.api_process = None
     context.http = requests.Session()
