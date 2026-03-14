@@ -10,6 +10,7 @@ from step_utils import extract_collection, find_by_title
 
 
 def _lookup_project_by_title(context, title):
+    """Fetch and return a project matching the given title."""
     r = context.http.get(f"{context.base_url}/projects", params={"title": title}, timeout=5)
     assert r.status_code == 200, f"GET /projects failed: {r.status_code}, body: {r.text}"
 
@@ -51,6 +52,7 @@ def step_project_exists_with_description(context, title, description):
 
 @when('I change project {title} title to {title_b} through a POST request')
 def step_change_project_title_post(context, title, title_b):
+    """Change a project's title using POST."""
     project = _lookup_project_by_title(context, title)
     if project is not None:
         project_id = project.get("id")
@@ -71,6 +73,7 @@ def step_change_project_title_post(context, title, title_b):
 
 @when('I change project {title} title to {title_b} through a PUT request')
 def step_change_project_title_put(context, title, title_b):
+    """Change a project's title using PUT."""
     project = _lookup_project_by_title(context, title)
     if project is not None:
         project_id = project.get("id")
@@ -92,6 +95,7 @@ def step_change_project_title_put(context, title, title_b):
 
 @then('its title should be {title_b}')
 def step_verify_project_title_changed(context, title_b):
+    """Verify the project title was updated."""
     project_id = getattr(context, "story04_target_project_id", None)
     assert project_id is not None, "No target project id stored for title verification"
 
@@ -109,6 +113,7 @@ def step_verify_project_title_changed(context, title_b):
 
 @then('nothing else should change for project {title}')
 def step_verify_nothing_else_changed(context, title):
+    """Verify non-title project fields remain unchanged."""
     project_id = getattr(context, "story04_target_project_id", None)
     before_project = getattr(context, "story04_before_project", None)
 
@@ -132,6 +137,7 @@ def step_verify_nothing_else_changed(context, title):
 
 @then('project titled {project} should not exist')
 def step_verify_project_title_not_exists(context, project):
+    """Verify no project exists with this title."""
     r = context.http.get(f"{context.base_url}/projects", params={"title": project}, timeout=5)
     assert r.status_code == 200, f"GET /projects failed: {r.status_code}, body: {r.text}"
 

@@ -9,6 +9,7 @@ from step_utils import extract_collection, find_by_title
 
 @when('I create a category named {name}')
 def step_create_category(context, name):
+    """Create a category with the provided name."""
     payload = {"title": name}
     r = context.http.post(f"{context.base_url}/categories", json=payload, timeout=5)
     context.last_response = r
@@ -16,6 +17,7 @@ def step_create_category(context, name):
 
 @then('the category {name} should be created successfully')
 def step_verify_category(context, name):
+    """Verify a category with this name exists."""
     r = context.http.get(f"{context.base_url}/categories", params={"title": name}, timeout=5)
     assert r.status_code == 200, f"GET /categories failed: {r.status_code}, body: {r.text}"
 
@@ -26,6 +28,7 @@ def step_verify_category(context, name):
 
 @given('a category named {name} exists')
 def step_category_exists(context, name):
+    """Ensure a category with this name exists."""
 
     r = context.http.get(f"{context.base_url}/categories", params={"title": name}, timeout=5)
     assert r.status_code == 200, f"GET /categories failed: {r.status_code}, body: {r.text}"
@@ -42,6 +45,7 @@ def step_category_exists(context, name):
 
 @when('I rename category {old_name} to {new_name}')
 def step_rename_category(context, old_name, new_name):
+    """Rename a category from old name to new name."""
     r = context.http.get(f"{context.base_url}/categories", params={"title": old_name}, timeout=5)
     assert r.status_code == 200, f"GET /categories failed: {r.status_code}, body: {r.text}"
 
@@ -60,6 +64,7 @@ def step_rename_category(context, old_name, new_name):
 
 @when('I create a category with an empty name')
 def step_create_category_empty_name(context):
+    """Attempt to create a category without a name."""
     payload = {}
     context.last_response = context.http.post(
         f"{context.base_url}/categories", json=payload, timeout=5
@@ -67,5 +72,6 @@ def step_create_category_empty_name(context):
 
 @then('the API should return an error indicating that the category name cannot be empty')
 def step_verify_empty_name_error(context):
+    """Verify empty category name returns an error."""
     r = context.last_response
     assert r.status_code == 400, f"Expected validation error, got {r.status_code}, body: {r.text}"

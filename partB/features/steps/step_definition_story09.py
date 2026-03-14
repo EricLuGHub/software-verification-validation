@@ -17,6 +17,7 @@ from step_utils import (
 
 @given('todo with title {todo_title} is a task of that project')
 def step_todo_is_task_of_project(context, todo_title):
+    """Ensure a todo is linked as a task of current project."""
     project_id = getattr(context, "current_project_id", None)
     assert project_id is not None, "Project must be created before creating relationship"
 
@@ -29,6 +30,7 @@ def step_todo_is_task_of_project(context, todo_title):
 
 @given('some todo is a task of project {project_title}')
 def step_some_todo_is_task_of_project(context, project_title):
+    """Create and link a temporary todo to a project."""
     project_id = ensure_project_exists(context, project_title)
     todo_title = f"tmp-task-{int(time.time() * 1000)}"
     todo_id = ensure_todo_exists(context, todo_title)
@@ -42,6 +44,7 @@ def step_some_todo_is_task_of_project(context, project_title):
 
 @given('a taskof relationship between the two does not exist')
 def step_no_relationship_between_two(context):
+    """Ensure no task relationship exists for current pair."""
     project_id = getattr(context, "current_project_id", None)
     todo_id = getattr(context, "current_todo_id", None)
     assert project_id is not None and todo_id is not None, "Project and todo must exist first"
@@ -50,6 +53,7 @@ def step_no_relationship_between_two(context):
 
 @when('I delete the relationship between the two from the task\'s side')
 def step_delete_relationship_from_task_side(context):
+    """Delete task relationship via the todo endpoint."""
     project_id = getattr(context, "current_project_id", None)
     todo_id = getattr(context, "current_todo_id", None)
     assert project_id is not None and todo_id is not None, "Project and todo must exist first"
@@ -60,6 +64,7 @@ def step_delete_relationship_from_task_side(context):
 
 @when('I delete the relationship between the two from the project\'s side')
 def step_delete_relationship_from_project_side(context):
+    """Delete task relationship via the project endpoint."""
     project_id = getattr(context, "current_project_id", None)
     todo_id = getattr(context, "current_todo_id", None)
     assert project_id is not None and todo_id is not None, "Project and todo must exist first"
@@ -70,6 +75,7 @@ def step_delete_relationship_from_project_side(context):
 
 @then('the relationship should no longer exist')
 def step_relationship_no_longer_exists(context):
+    """Verify the project-todo relationship was removed."""
     project_id = getattr(context, "current_project_id", None)
     todo_id = getattr(context, "current_todo_id", None)
     assert project_id is not None and todo_id is not None, "Project and todo must exist first"

@@ -8,6 +8,7 @@ from pathlib import Path
 
 
 def main() -> int:
+    """Run story feature files in random order."""
     script_dir = Path(__file__).resolve().parent
     feature_dir = script_dir / "features"
 

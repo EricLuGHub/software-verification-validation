@@ -6,6 +6,7 @@ import requests
 import random
 
 def before_feature(context, feature):
+    """Optionally randomize feature scenario execution order."""
     shuffle_enabled = context.config.userdata.get("shuffle", "false") == "true"
 
     if shuffle_enabled:
@@ -26,6 +27,7 @@ def before_feature(context, feature):
 
 
 def before_scenario(context, scenario):
+    """Initialize shared context objects before each scenario."""
     context.api_process = None
     context.http = requests.Session()
     context.base_url = "http://localhost:4567"

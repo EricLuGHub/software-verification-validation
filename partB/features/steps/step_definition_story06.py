@@ -11,6 +11,7 @@ from step_utils import extract_collection, find_by_title
 
 @when('I create some project with title {title}')
 def step_create_project(context, title):
+    """Create a project with the given title."""
     payload = {"title": title}
     r = context.http.post(f"{context.base_url}/projects", json=payload, timeout=5)
     context.last_response = r
@@ -20,6 +21,7 @@ def step_create_project(context, title):
 
 @then('the project {title} should be created successfully')
 def step_verify_project(context, title):
+    """Verify a project with this title was created."""
     r = context.http.get(f"{context.base_url}/projects", params={"title": title}, timeout=5)
     assert r.status_code == 200, f"GET /projects failed: {r.status_code}, body: {r.text}"
 
@@ -32,6 +34,7 @@ def step_verify_project(context, title):
 
 @when('I rename project {old_title} to {new_title}')
 def step_rename_project(context, old_title, new_title):
+    """Rename a project from old title to new title."""
     r = context.http.get(f"{context.base_url}/projects", params={"title": old_title}, timeout=5)
     assert r.status_code == 200, f"GET /projects failed: {r.status_code}, body: {r.text}"
 

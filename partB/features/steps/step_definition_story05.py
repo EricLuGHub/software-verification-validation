@@ -10,12 +10,14 @@ from step_utils import extract_collection, find_by_title
 
 
 def _resolve_todo_id(context, todo_title):
+    """Resolve a todo ID from context by title."""
     if hasattr(context, "todo_ids") and context.todo_ids.get(todo_title):
         return context.todo_ids[todo_title]
     return None
 
 
 def _resolve_project_id(context, project_ref):
+    """Resolve a project ID from context or numeric input."""
     if project_ref.isdigit():
         return project_ref
 
@@ -25,6 +27,7 @@ def _resolve_project_id(context, project_ref):
 
 @when('I make the todo {todo_title} a task of project {project_ref}')
 def step_make_todo_task_of_project(context, todo_title, project_ref):
+    """Create a taskof relationship from an existing todo."""
     todo_id = _resolve_todo_id(context, todo_title)
     project_id = _resolve_project_id(context, project_ref)
 
@@ -40,6 +43,7 @@ def step_make_todo_task_of_project(context, todo_title, project_ref):
 
 @when('I create some todo {todo_title} as a task of project {project_title}')
 def step_create_todo_as_task_of_project(context, todo_title, project_title):
+    """Create a todo and link it to a project as taskof."""
     project_id = _resolve_project_id(context, project_title)
 
     payload = {"title": todo_title, "tasksof": [{"id": str(project_id)}]}
@@ -60,6 +64,7 @@ def step_create_todo_as_task_of_project(context, todo_title, project_title):
 
 @then('the taskof relationship request should be accepted')
 def step_relationship_request_accepted(context):
+    """Verify taskof relationship creation is accepted."""
     r = context.last_response
     assert r.status_code in (200, 201), (
         f"Expected 200 or 201 for relationship creation, got {r.status_code}, body: {r.text}"
@@ -68,6 +73,7 @@ def step_relationship_request_accepted(context):
 
 @then('the todo {todo_title} should be a task of project {project_ref}')
 def step_todo_should_be_task_of_project(context, todo_title, project_ref):
+    """Verify a specific todo is linked to a specific project."""
     todo_id = _resolve_todo_id(context, todo_title)
     expected_project_id = str(_resolve_project_id(context, project_ref))
 
@@ -87,6 +93,7 @@ def step_todo_should_be_task_of_project(context, todo_title, project_ref):
 
 @then('the todo should be a task of that project')
 def step_todo_should_be_task_of_current_project(context):
+    """Verify current todo is linked to current project."""
     todo_id = getattr(context, "current_todo_id", None)
     project_id = getattr(context, "current_project_id", None)
     assert todo_id is not None and project_id is not None, "Current todo and project must be set"
