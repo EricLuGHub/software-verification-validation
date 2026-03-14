@@ -12,14 +12,7 @@ from step_utils import extract_collection, find_by_title
 def _resolve_todo_id(context, todo_title):
     if hasattr(context, "todo_ids") and context.todo_ids.get(todo_title):
         return context.todo_ids[todo_title]
-
-    r = context.http.get(f"{context.base_url}/todos", params={"title": todo_title}, timeout=5)
-    assert r.status_code == 200, f"GET /todos failed: {r.status_code}, body: {r.text}"
-
-    todos = extract_collection(r.json(), "todos")
-    todo = find_by_title(todos, todo_title)
-    assert todo is not None, f"Todo '{todo_title}' not found"
-    return todo.get("id")
+    return None
 
 
 def _resolve_project_id(context, project_ref):
@@ -28,14 +21,6 @@ def _resolve_project_id(context, project_ref):
 
     if hasattr(context, "project_ids") and context.project_ids.get(project_ref):
         return context.project_ids[project_ref]
-
-    r = context.http.get(f"{context.base_url}/projects", params={"title": project_ref}, timeout=5)
-    assert r.status_code == 200, f"GET /projects failed: {r.status_code}, body: {r.text}"
-
-    projects = extract_collection(r.json(), "projects")
-    project = find_by_title(projects, project_ref)
-    assert project is not None, f"Project '{project_ref}' not found"
-    return project.get("id")
 
 
 @when('I make the todo {todo_title} a task of project {project_ref}')

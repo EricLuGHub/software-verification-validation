@@ -1,7 +1,7 @@
 Feature: Creating taskof relationships
   As an ECSE 429 student,
   I want to make a TODO a task of a project
-  to group the project’s deliverables together.
+  to group the projects deliverables together.
 
   Background:
 		Given the API service is running
