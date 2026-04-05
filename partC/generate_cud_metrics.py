@@ -18,8 +18,8 @@ HOST = "http://localhost:4567"
 PROJECTS_ENDPOINT = "/projects"
 TODOS_ENDPOINT = "/todos"
 JAR_PATH = Path(__file__).resolve().parents[1] / "partC" / "runTodoManagerRestAPI-1.5.5.jar"
-NUM_OPERATIONS = 3333 
-SAMPLING_RATE = 10  # Write every nth operation to CSV (e.g., 10 = write every 10th operation)
+NUM_OPERATIONS = 2000
+SAMPLING_RATE = 10
 
 class MetricsCollector:
     """Collects CPU and memory metrics during operations."""
@@ -222,6 +222,18 @@ class CUDMetricsGenerator:
             raise Exception(f"Failed to delete todo: {response.status_code}")
         
         return transaction_time, end_metrics
+
+    def _sampled_row(self, operation: str, end_metrics: Dict, transaction_time: float, item_id: str, count: int) -> Dict:
+        """Build a sampled CSV row with numeric metrics rounded to 2 decimals."""
+        return {
+            "timestamp": datetime.now().isoformat(),
+            "operation": operation,
+            "cpu_percent": round(end_metrics["cpu_percent"], 2),
+            "memory_mb": round(end_metrics["memory_mb"], 2),
+            "transaction_time_ms": round(transaction_time * 1000, 2),
+            "item_id": item_id,
+            "count": count,
+        }
     
     def collect_project_metrics(self) -> List[Dict]:
         """Collect metrics for project CUD operations."""
@@ -229,9 +241,9 @@ class CUDMetricsGenerator:
         metrics = []
         
         # Calculate splits: C, U, D
-        create_count = NUM_OPERATIONS // 3
-        update_count = NUM_OPERATIONS // 3
-        delete_count = NUM_OPERATIONS - create_count - update_count
+        create_count = NUM_OPERATIONS 
+        update_count = NUM_OPERATIONS 
+        delete_count = NUM_OPERATIONS 
         
         operation_count = 0
         
@@ -243,15 +255,7 @@ class CUDMetricsGenerator:
                 operation_count += 1
                 # Only sample every SAMPLING_RATE operations
                 if operation_count % SAMPLING_RATE == 0:
-                    metrics.append({
-                        "timestamp": datetime.now().isoformat(),
-                        "operation": "CREATE",
-                        "cpu_percent": end_metrics["cpu_percent"],
-                        "memory_mb": end_metrics["memory_mb"],
-                        "transaction_time_ms": transaction_time * 1000,
-                        "item_id": project_id,
-                        "count": operation_count
-                    })
+                    metrics.append(self._sampled_row("CREATE", end_metrics, transaction_time, project_id, operation_count))
                 if (i + 1) % 100 == 0:
                     print(f"{i + 1}/{create_count} creates")
             except Exception as e:
@@ -270,15 +274,7 @@ class CUDMetricsGenerator:
                 operation_count += 1
                 # Only sample every SAMPLING_RATE operations
                 if operation_count % SAMPLING_RATE == 0:
-                    metrics.append({
-                        "timestamp": datetime.now().isoformat(),
-                        "operation": "UPDATE",
-                        "cpu_percent": end_metrics["cpu_percent"],
-                        "memory_mb": end_metrics["memory_mb"],
-                        "transaction_time_ms": transaction_time * 1000,
-                        "item_id": project_id,
-                        "count": operation_count
-                    })
+                    metrics.append(self._sampled_row("UPDATE", end_metrics, transaction_time, project_id, operation_count))
                 if (i + 1) % 100 == 0:
                     print(f"{i + 1}/{update_count} updates")
             except Exception as e:
@@ -294,15 +290,7 @@ class CUDMetricsGenerator:
                 operation_count += 1
                 # Only sample every SAMPLING_RATE operations
                 if operation_count % SAMPLING_RATE == 0:
-                    metrics.append({
-                        "timestamp": datetime.now().isoformat(),
-                        "operation": "DELETE",
-                        "cpu_percent": end_metrics["cpu_percent"],
-                        "memory_mb": end_metrics["memory_mb"],
-                        "transaction_time_ms": transaction_time * 1000,
-                        "item_id": project_id,
-                        "count": operation_count
-                    })
+                    metrics.append(self._sampled_row("DELETE", end_metrics, transaction_time, project_id, operation_count))
                 if (i + 1) % 100 == 0:
                     print(f"{i + 1}/{delete_count} deletes")
             except Exception as e:
@@ -318,9 +306,9 @@ class CUDMetricsGenerator:
         metrics = []
         
         # Calculate splits: C, U, D
-        create_count = NUM_OPERATIONS // 3
-        update_count = NUM_OPERATIONS // 3
-        delete_count = NUM_OPERATIONS - create_count - update_count
+        create_count = NUM_OPERATIONS 
+        update_count = NUM_OPERATIONS 
+        delete_count = NUM_OPERATIONS 
         
         operation_count = 0
         
@@ -332,15 +320,7 @@ class CUDMetricsGenerator:
                 operation_count += 1
                 # Only sample every SAMPLING_RATE operations
                 if operation_count % SAMPLING_RATE == 0:
-                    metrics.append({
-                        "timestamp": datetime.now().isoformat(),
-                        "operation": "CREATE",
-                        "cpu_percent": end_metrics["cpu_percent"],
-                        "memory_mb": end_metrics["memory_mb"],
-                        "transaction_time_ms": transaction_time * 1000,
-                        "item_id": todo_id,
-                        "count": operation_count
-                    })
+                    metrics.append(self._sampled_row("CREATE", end_metrics, transaction_time, todo_id, operation_count))
                 if (i + 1) % 100 == 0:
                     print(f" {i + 1}/{create_count} creates")
             except Exception as e:
@@ -359,15 +339,7 @@ class CUDMetricsGenerator:
                 operation_count += 1
                 # Only sample every SAMPLING_RATE operations
                 if operation_count % SAMPLING_RATE == 0:
-                    metrics.append({
-                        "timestamp": datetime.now().isoformat(),
-                        "operation": "UPDATE",
-                        "cpu_percent": end_metrics["cpu_percent"],
-                        "memory_mb": end_metrics["memory_mb"],
-                        "transaction_time_ms": transaction_time * 1000,
-                        "item_id": todo_id,
-                        "count": operation_count
-                    })
+                    metrics.append(self._sampled_row("UPDATE", end_metrics, transaction_time, todo_id, operation_count))
                 if (i + 1) % 100 == 0:
                     print(f"{i + 1}/{update_count} updates")
             except Exception as e:
@@ -383,15 +355,7 @@ class CUDMetricsGenerator:
                 operation_count += 1
                 # Only sample every SAMPLING_RATE operations
                 if operation_count % SAMPLING_RATE == 0:
-                    metrics.append({
-                        "timestamp": datetime.now().isoformat(),
-                        "operation": "DELETE",
-                        "cpu_percent": end_metrics["cpu_percent"],
-                        "memory_mb": end_metrics["memory_mb"],
-                        "transaction_time_ms": transaction_time * 1000,
-                        "item_id": todo_id,
-                        "count": operation_count
-                    })
+                    metrics.append(self._sampled_row("DELETE", end_metrics, transaction_time, todo_id, operation_count))
                 if (i + 1) % 100 == 0:
                     print(f" {i + 1}/{delete_count} deletes")
             except Exception as e:
