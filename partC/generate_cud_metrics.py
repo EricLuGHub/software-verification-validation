@@ -8,6 +8,7 @@ import csv
 import socket
 import os
 import signal
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Tuple
@@ -18,8 +19,9 @@ HOST = "http://localhost:4567"
 PROJECTS_ENDPOINT = "/projects"
 TODOS_ENDPOINT = "/todos"
 JAR_PATH = Path(__file__).resolve().parents[1] / "partC" / "runTodoManagerRestAPI-1.5.5.jar"
-NUM_OPERATIONS = 2000
+NUM_OPERATIONS = 1
 SAMPLING_RATE = 10
+BATCH_CONCURRENCY = 500
 
 class MetricsCollector:
     """Collects CPU and memory metrics during operations."""
@@ -88,22 +90,11 @@ class CUDMetricsGenerator:
     
     def stop_server(self):
         """Stop the TODO server."""
-        try:
-            print("Shutting down server...")
-            requests.get(f"{HOST}/shutdown", timeout=3)
-            time.sleep(1)
-        except requests.RequestException as e:
-            print(f"Error calling shutdown endpoint: {e}")
+        print("Shutting down server...")
+        requests.get(f"{HOST}/shutdown", timeout=3)
+        time.sleep(1)
+      
         
-        if self.server_proc is not None:
-            try:
-                self.server_proc.terminate()
-                self.server_proc.wait(timeout=5)
-                print("Server stopped")
-            except subprocess.TimeoutExpired:
-                self.server_proc.kill()
-                self.server_proc.wait()
-                print("Server killed")
     
     def measure_create_project(self) -> Tuple[float, Dict, str]:
         """Create a project and measure performance."""
@@ -123,7 +114,6 @@ class CUDMetricsGenerator:
         
         if response.status_code == 201:
             project_id = str(response.json().get("id"))
-            self.project_ids.append(project_id)
             return transaction_time, end_metrics, project_id
         else:
             raise Exception(f"Failed to create project: {response.status_code}")
@@ -182,7 +172,6 @@ class CUDMetricsGenerator:
         
         if response.status_code == 201:
             todo_id = str(response.json().get("id"))
-            self.todo_ids.append(todo_id)
             return transaction_time, end_metrics, todo_id
         else:
             raise Exception(f"Failed to create todo: {response.status_code}")
@@ -246,58 +235,78 @@ class CUDMetricsGenerator:
         delete_count = NUM_OPERATIONS 
         
         operation_count = 0
+        errors = 0
         
         # CREATE operations
         print(f"  Creating {create_count} projects...")
-        for i in range(create_count):
-            try:
-                transaction_time, end_metrics, project_id = self.measure_create_project()
-                operation_count += 1
-                # Only sample every SAMPLING_RATE operations
-                if operation_count % SAMPLING_RATE == 0:
-                    metrics.append(self._sampled_row("CREATE", end_metrics, transaction_time, project_id, operation_count))
-                if (i + 1) % 100 == 0:
-                    print(f"{i + 1}/{create_count} creates")
-            except Exception as e:
-                print(f"Error: {e}")
-                continue
+        for batch_start in range(0, create_count, BATCH_CONCURRENCY):
+            batch_end = min(batch_start + BATCH_CONCURRENCY, create_count)
+            with ThreadPoolExecutor(max_workers=BATCH_CONCURRENCY) as executor:
+                futures = [executor.submit(self.measure_create_project) for _ in range(batch_end - batch_start)]
+                for future in as_completed(futures):
+                    try:
+                        transaction_time, end_metrics, project_id = future.result()
+                        self.project_ids.append(project_id)
+                        operation_count += 1
+                        if operation_count % SAMPLING_RATE == 0:
+                            metrics.append(self._sampled_row("CREATE", end_metrics, transaction_time, project_id, operation_count))
+                    except Exception as e:
+                        errors += 1
+                        print(f"Error: {e}")
+            if batch_end % 100 == 0 or batch_end == create_count:
+                print(f"{batch_end}/{create_count} creates")
         
         # UPDATE operations
         print(f"  Updating {update_count} projects...")
-        for i in range(update_count):
-            if not self.project_ids:
-                print("    No projects available for update")
-                break
-            try:
-                project_id = self.project_ids[i % len(self.project_ids)]
-                transaction_time, end_metrics = self.measure_update_project(project_id)
-                operation_count += 1
-                # Only sample every SAMPLING_RATE operations
-                if operation_count % SAMPLING_RATE == 0:
-                    metrics.append(self._sampled_row("UPDATE", end_metrics, transaction_time, project_id, operation_count))
-                if (i + 1) % 100 == 0:
-                    print(f"{i + 1}/{update_count} updates")
-            except Exception as e:
-                print(f"Error: {e}")
-                continue
+        if not self.project_ids:
+            print("    No projects available for update")
+        else:
+            for batch_start in range(0, update_count, BATCH_CONCURRENCY):
+                batch_end = min(batch_start + BATCH_CONCURRENCY, update_count)
+                future_to_id = {}
+                with ThreadPoolExecutor(max_workers=BATCH_CONCURRENCY) as executor:
+                    for i in range(batch_start, batch_end):
+                        project_id = self.project_ids[i % len(self.project_ids)]
+                        future = executor.submit(self.measure_update_project, project_id)
+                        future_to_id[future] = project_id
+                    for future in as_completed(future_to_id):
+                        project_id = future_to_id[future]
+                        try:
+                            transaction_time, end_metrics = future.result()
+                            operation_count += 1
+                            if operation_count % SAMPLING_RATE == 0:
+                                metrics.append(self._sampled_row("UPDATE", end_metrics, transaction_time, project_id, operation_count))
+                        except Exception as e:
+                            errors += 1
+                            print(f"Error: {e}")
+                if batch_end % 100 == 0 or batch_end == update_count:
+                    print(f"{batch_end}/{update_count} updates")
         
         # DELETE operations
         print(f"  Deleting {delete_count} projects...")
         projects_to_delete = self.project_ids[:delete_count]
-        for i, project_id in enumerate(projects_to_delete):
-            try:
-                transaction_time, end_metrics = self.measure_delete_project(project_id)
-                operation_count += 1
-                # Only sample every SAMPLING_RATE operations
-                if operation_count % SAMPLING_RATE == 0:
-                    metrics.append(self._sampled_row("DELETE", end_metrics, transaction_time, project_id, operation_count))
-                if (i + 1) % 100 == 0:
-                    print(f"{i + 1}/{delete_count} deletes")
-            except Exception as e:
-                print(f"Error: {e}")
-                continue
+        for batch_start in range(0, len(projects_to_delete), BATCH_CONCURRENCY):
+            batch_ids = projects_to_delete[batch_start: batch_start + BATCH_CONCURRENCY]
+            future_to_id = {}
+            with ThreadPoolExecutor(max_workers=BATCH_CONCURRENCY) as executor:
+                for project_id in batch_ids:
+                    future = executor.submit(self.measure_delete_project, project_id)
+                    future_to_id[future] = project_id
+                for future in as_completed(future_to_id):
+                    project_id = future_to_id[future]
+                    try:
+                        transaction_time, end_metrics = future.result()
+                        operation_count += 1
+                        if operation_count % SAMPLING_RATE == 0:
+                            metrics.append(self._sampled_row("DELETE", end_metrics, transaction_time, project_id, operation_count))
+                    except Exception as e:
+                        errors += 1
+                        print(f"Error: {e}")
+            done = min(batch_start + BATCH_CONCURRENCY, len(projects_to_delete))
+            if done % 100 == 0 or done == len(projects_to_delete):
+                print(f"{done}/{delete_count} deletes")
         
-        print(f"Collected {operation_count} project metrics")
+        print(f"Collected {operation_count} project operations with {errors} errors")
         return metrics
     
     def collect_todo_metrics(self) -> List[Dict]:
@@ -311,58 +320,78 @@ class CUDMetricsGenerator:
         delete_count = NUM_OPERATIONS 
         
         operation_count = 0
+        errors = 0
         
         # CREATE operations
         print(f"  Creating {create_count} todos...")
-        for i in range(create_count):
-            try:
-                transaction_time, end_metrics, todo_id = self.measure_create_todo()
-                operation_count += 1
-                # Only sample every SAMPLING_RATE operations
-                if operation_count % SAMPLING_RATE == 0:
-                    metrics.append(self._sampled_row("CREATE", end_metrics, transaction_time, todo_id, operation_count))
-                if (i + 1) % 100 == 0:
-                    print(f" {i + 1}/{create_count} creates")
-            except Exception as e:
-                print(f"Error: {e}")
-                continue
+        for batch_start in range(0, create_count, BATCH_CONCURRENCY):
+            batch_end = min(batch_start + BATCH_CONCURRENCY, create_count)
+            with ThreadPoolExecutor(max_workers=BATCH_CONCURRENCY) as executor:
+                futures = [executor.submit(self.measure_create_todo) for _ in range(batch_end - batch_start)]
+                for future in as_completed(futures):
+                    try:
+                        transaction_time, end_metrics, todo_id = future.result()
+                        self.todo_ids.append(todo_id)
+                        operation_count += 1
+                        if operation_count % SAMPLING_RATE == 0:
+                            metrics.append(self._sampled_row("CREATE", end_metrics, transaction_time, todo_id, operation_count))
+                    except Exception as e:
+                        errors += 1
+                        print(f"Error: {e}")
+            if batch_end % 100 == 0 or batch_end == create_count:
+                print(f"{batch_end}/{create_count} creates")
         
         # UPDATE operations
         print(f"  Updating {update_count} todos...")
-        for i in range(update_count):
-            if not self.todo_ids:
-                print("No todos available for update")
-                break
-            try:
-                todo_id = self.todo_ids[i % len(self.todo_ids)]
-                transaction_time, end_metrics = self.measure_update_todo(todo_id)
-                operation_count += 1
-                # Only sample every SAMPLING_RATE operations
-                if operation_count % SAMPLING_RATE == 0:
-                    metrics.append(self._sampled_row("UPDATE", end_metrics, transaction_time, todo_id, operation_count))
-                if (i + 1) % 100 == 0:
-                    print(f"{i + 1}/{update_count} updates")
-            except Exception as e:
-                print(f"Error: {e}")
-                continue
+        if not self.todo_ids:
+            print("No todos available for update")
+        else:
+            for batch_start in range(0, update_count, BATCH_CONCURRENCY):
+                batch_end = min(batch_start + BATCH_CONCURRENCY, update_count)
+                future_to_id = {}
+                with ThreadPoolExecutor(max_workers=BATCH_CONCURRENCY) as executor:
+                    for i in range(batch_start, batch_end):
+                        todo_id = self.todo_ids[i % len(self.todo_ids)]
+                        future = executor.submit(self.measure_update_todo, todo_id)
+                        future_to_id[future] = todo_id
+                    for future in as_completed(future_to_id):
+                        todo_id = future_to_id[future]
+                        try:
+                            transaction_time, end_metrics = future.result()
+                            operation_count += 1
+                            if operation_count % SAMPLING_RATE == 0:
+                                metrics.append(self._sampled_row("UPDATE", end_metrics, transaction_time, todo_id, operation_count))
+                        except Exception as e:
+                            errors += 1
+                            print(f"Error: {e}")
+                if batch_end % 100 == 0 or batch_end == update_count:
+                    print(f"{batch_end}/{update_count} updates")
         
         # DELETE operations
         print(f"  Deleting {delete_count} todos...")
         todos_to_delete = self.todo_ids[:delete_count]
-        for i, todo_id in enumerate(todos_to_delete):
-            try:
-                transaction_time, end_metrics = self.measure_delete_todo(todo_id)
-                operation_count += 1
-                # Only sample every SAMPLING_RATE operations
-                if operation_count % SAMPLING_RATE == 0:
-                    metrics.append(self._sampled_row("DELETE", end_metrics, transaction_time, todo_id, operation_count))
-                if (i + 1) % 100 == 0:
-                    print(f" {i + 1}/{delete_count} deletes")
-            except Exception as e:
-                print(f"Error: {e}")
-                continue
+        for batch_start in range(0, len(todos_to_delete), BATCH_CONCURRENCY):
+            batch_ids = todos_to_delete[batch_start: batch_start + BATCH_CONCURRENCY]
+            future_to_id = {}
+            with ThreadPoolExecutor(max_workers=BATCH_CONCURRENCY) as executor:
+                for todo_id in batch_ids:
+                    future = executor.submit(self.measure_delete_todo, todo_id)
+                    future_to_id[future] = todo_id
+                for future in as_completed(future_to_id):
+                    todo_id = future_to_id[future]
+                    try:
+                        transaction_time, end_metrics = future.result()
+                        operation_count += 1
+                        if operation_count % SAMPLING_RATE == 0:
+                            metrics.append(self._sampled_row("DELETE", end_metrics, transaction_time, todo_id, operation_count))
+                    except Exception as e:
+                        errors += 1
+                        print(f"Error: {e}")
+            done = min(batch_start + BATCH_CONCURRENCY, len(todos_to_delete))
+            if done % 100 == 0 or done == len(todos_to_delete):
+                print(f"{done}/{delete_count} deletes")
         
-        print(f"Collected {operation_count} todo metrics")
+        print(f"Collected {operation_count} todo operations with {errors} errors")
         return metrics
     
     def save_metrics_to_csv(self, metrics: List[Dict], filename: str):
