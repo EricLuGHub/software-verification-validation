@@ -11,7 +11,7 @@ import signal
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 ## NOTE: CUD = Create, Update, Delete (operations)
 
@@ -19,20 +19,44 @@ HOST = "http://localhost:4567"
 PROJECTS_ENDPOINT = "/projects"
 TODOS_ENDPOINT = "/todos"
 JAR_PATH = Path(__file__).resolve().parents[1] / "partC" / "runTodoManagerRestAPI-1.5.5.jar"
-NUM_OPERATIONS = 8000
+NUM_OPERATIONS = 4000
 SAMPLING_RATE = 10
-BATCH_CONCURRENCY = 800
+BATCH_CONCURRENCY = 400
 
 class MetricsCollector:
-    """Collects system-wide CPU and memory metrics during operations."""
+    """Collects metrics, preferring the target server process when available."""
     
-    def __init__(self):
-        pass
+    def __init__(self, target_process: Optional[psutil.Process] = None):
+        self.target_process = target_process
+        # Warm-up for delta-based CPU sampling APIs.
+        psutil.cpu_percent(interval=None)
+        if self.target_process is not None:
+            try:
+                self.target_process.cpu_percent(interval=None)
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                self.target_process = None
+
+    def set_target_process(self, target_process: Optional[psutil.Process]):
+        self.target_process = target_process
+        if self.target_process is not None:
+            try:
+                self.target_process.cpu_percent(interval=None)
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                self.target_process = None
         
     def get_metrics(self) -> Dict:
-        """Get system-wide CPU and memory metrics."""
+        """Get metrics from target process; fall back to system-wide metrics."""
+        if self.target_process is not None:
+            try:
+                return {
+                    "cpu_percent": self.target_process.cpu_percent(interval=None),
+                    "memory_mb": self.target_process.memory_info().rss / (1024 * 1024),
+                }
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                self.target_process = None
+
         return {
-            "cpu_percent": psutil.cpu_percent(interval=0.1),
+            "cpu_percent": psutil.cpu_percent(interval=None),
             "memory_mb": psutil.virtual_memory().used / (1024 * 1024),
         }
 
@@ -49,6 +73,18 @@ class CUDMetricsGenerator:
         """Check if port is open."""
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             return s.connect_ex((host, port)) == 0
+
+    def find_jar_process(self) -> Optional[psutil.Process]:
+        """Find the Java process running this specific JAR, if present."""
+        jar_name = JAR_PATH.name
+        for proc in psutil.process_iter(["pid", "name", "cmdline"]):
+            try:
+                cmdline = proc.info.get("cmdline") or []
+                if any(jar_name in part for part in cmdline):
+                    return psutil.Process(proc.info["pid"])
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                continue
+        return None
     
     def wait_until_ready(self, timeout_seconds=15, endpoint=TODOS_ENDPOINT):
         """Wait for server to be ready."""
@@ -72,6 +108,9 @@ class CUDMetricsGenerator:
         """Start the TODO server."""
         if self.is_port_open():
             print("Server is already running on port 4567")
+            jar_proc = self.find_jar_process()
+            if jar_proc is not None:
+                self.metrics_collector.set_target_process(jar_proc)
             return
         
         if not JAR_PATH.exists():
@@ -87,6 +126,7 @@ class CUDMetricsGenerator:
         # Give it a moment to start
         time.sleep(2)
         self.wait_until_ready()
+        self.metrics_collector.set_target_process(psutil.Process(self.server_proc.pid))
     
     def stop_server(self):
         """Stop the TODO server."""
@@ -218,7 +258,7 @@ class CUDMetricsGenerator:
         return {
             "timestamp": datetime.now().isoformat(),
             "operation": operation,
-            "cpu_percent": round(end_metrics["cpu_percent"] / 10, 2),
+            "cpu_percent": round(end_metrics["cpu_percent"], 2),
             "memory_mb": round(end_metrics["memory_mb"], 2),
             "transaction_time_ms": round(transaction_time * 1000, 2),
             "item_id": item_id,
