@@ -19,21 +19,21 @@ HOST = "http://localhost:4567"
 PROJECTS_ENDPOINT = "/projects"
 TODOS_ENDPOINT = "/todos"
 JAR_PATH = Path(__file__).resolve().parents[1] / "partC" / "runTodoManagerRestAPI-1.5.5.jar"
-NUM_OPERATIONS = 1
+NUM_OPERATIONS = 8000
 SAMPLING_RATE = 10
-BATCH_CONCURRENCY = 500
+BATCH_CONCURRENCY = 800
 
 class MetricsCollector:
-    """Collects CPU and memory metrics during operations."""
+    """Collects system-wide CPU and memory metrics during operations."""
     
     def __init__(self):
-        self.process = psutil.Process()
+        pass
         
     def get_metrics(self) -> Dict:
-        """Get current CPU and memory metrics."""
+        """Get system-wide CPU and memory metrics."""
         return {
-            "cpu_percent": self.process.cpu_percent(interval=0.1),
-            "memory_mb": self.process.memory_info().rss / (1024 * 1024),
+            "cpu_percent": psutil.cpu_percent(interval=0.1),
+            "memory_mb": psutil.virtual_memory().used / (1024 * 1024),
         }
 
 class CUDMetricsGenerator:
@@ -90,12 +90,13 @@ class CUDMetricsGenerator:
     
     def stop_server(self):
         """Stop the TODO server."""
-        print("Shutting down server...")
-        requests.get(f"{HOST}/shutdown", timeout=3)
-        time.sleep(1)
-      
-        
-    
+        try:
+            print("Shutting down server...")
+            requests.get(f"{HOST}/shutdown", timeout=3)
+            time.sleep(1)
+        except requests.RequestException:
+            pass
+
     def measure_create_project(self) -> Tuple[float, Dict, str]:
         """Create a project and measure performance."""
         start_time = time.time()
@@ -217,7 +218,7 @@ class CUDMetricsGenerator:
         return {
             "timestamp": datetime.now().isoformat(),
             "operation": operation,
-            "cpu_percent": round(end_metrics["cpu_percent"], 2),
+            "cpu_percent": round(end_metrics["cpu_percent"] / 10, 2),
             "memory_mb": round(end_metrics["memory_mb"], 2),
             "transaction_time_ms": round(transaction_time * 1000, 2),
             "item_id": item_id,
@@ -236,6 +237,9 @@ class CUDMetricsGenerator:
         
         operation_count = 0
         errors = 0
+        create_seq = 0
+        update_seq = 0
+        delete_seq = 0
         
         # CREATE operations
         print(f"  Creating {create_count} projects...")
@@ -247,9 +251,10 @@ class CUDMetricsGenerator:
                     try:
                         transaction_time, end_metrics, project_id = future.result()
                         self.project_ids.append(project_id)
+                        create_seq += 1
                         operation_count += 1
                         if operation_count % SAMPLING_RATE == 0:
-                            metrics.append(self._sampled_row("CREATE", end_metrics, transaction_time, project_id, operation_count))
+                            metrics.append(self._sampled_row("CREATE", end_metrics, transaction_time, project_id, create_seq))
                     except Exception as e:
                         errors += 1
                         print(f"Error: {e}")
@@ -273,9 +278,10 @@ class CUDMetricsGenerator:
                         project_id = future_to_id[future]
                         try:
                             transaction_time, end_metrics = future.result()
+                            update_seq += 1
                             operation_count += 1
                             if operation_count % SAMPLING_RATE == 0:
-                                metrics.append(self._sampled_row("UPDATE", end_metrics, transaction_time, project_id, operation_count))
+                                metrics.append(self._sampled_row("UPDATE", end_metrics, transaction_time, project_id, update_seq))
                         except Exception as e:
                             errors += 1
                             print(f"Error: {e}")
@@ -296,9 +302,10 @@ class CUDMetricsGenerator:
                     project_id = future_to_id[future]
                     try:
                         transaction_time, end_metrics = future.result()
+                        delete_seq += 1
                         operation_count += 1
                         if operation_count % SAMPLING_RATE == 0:
-                            metrics.append(self._sampled_row("DELETE", end_metrics, transaction_time, project_id, operation_count))
+                            metrics.append(self._sampled_row("DELETE", end_metrics, transaction_time, project_id, delete_seq))
                     except Exception as e:
                         errors += 1
                         print(f"Error: {e}")
@@ -321,6 +328,9 @@ class CUDMetricsGenerator:
         
         operation_count = 0
         errors = 0
+        create_seq = 0
+        update_seq = 0
+        delete_seq = 0
         
         # CREATE operations
         print(f"  Creating {create_count} todos...")
@@ -332,9 +342,10 @@ class CUDMetricsGenerator:
                     try:
                         transaction_time, end_metrics, todo_id = future.result()
                         self.todo_ids.append(todo_id)
+                        create_seq += 1
                         operation_count += 1
                         if operation_count % SAMPLING_RATE == 0:
-                            metrics.append(self._sampled_row("CREATE", end_metrics, transaction_time, todo_id, operation_count))
+                            metrics.append(self._sampled_row("CREATE", end_metrics, transaction_time, todo_id, create_seq))
                     except Exception as e:
                         errors += 1
                         print(f"Error: {e}")
@@ -358,9 +369,10 @@ class CUDMetricsGenerator:
                         todo_id = future_to_id[future]
                         try:
                             transaction_time, end_metrics = future.result()
+                            update_seq += 1
                             operation_count += 1
                             if operation_count % SAMPLING_RATE == 0:
-                                metrics.append(self._sampled_row("UPDATE", end_metrics, transaction_time, todo_id, operation_count))
+                                metrics.append(self._sampled_row("UPDATE", end_metrics, transaction_time, todo_id, update_seq))
                         except Exception as e:
                             errors += 1
                             print(f"Error: {e}")
@@ -381,9 +393,10 @@ class CUDMetricsGenerator:
                     todo_id = future_to_id[future]
                     try:
                         transaction_time, end_metrics = future.result()
+                        delete_seq += 1
                         operation_count += 1
                         if operation_count % SAMPLING_RATE == 0:
-                            metrics.append(self._sampled_row("DELETE", end_metrics, transaction_time, todo_id, operation_count))
+                            metrics.append(self._sampled_row("DELETE", end_metrics, transaction_time, todo_id, delete_seq))
                     except Exception as e:
                         errors += 1
                         print(f"Error: {e}")
