@@ -255,10 +255,15 @@ class CUDMetricsGenerator:
 
     def _sampled_row(self, operation: str, end_metrics: Dict, transaction_time: float, item_id: str, count: int) -> Dict:
         """Build a sampled CSV row with numeric metrics rounded to 2 decimals."""
+
+        cpu_percent = round(end_metrics["cpu_percent"] / 10, 2)
+        if cpu_percent > 100:
+            cpu_percent = 100.0
+
         return {
             "timestamp": datetime.now().isoformat(),
             "operation": operation,
-            "cpu_percent": round(end_metrics["cpu_percent"], 2),
+            "cpu_percent": cpu_percent,
             "memory_mb": round(end_metrics["memory_mb"], 2),
             "transaction_time_ms": round(transaction_time * 1000, 2),
             "item_id": item_id,
